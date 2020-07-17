@@ -29,6 +29,13 @@ class ViewController: UIViewController {
     @IBOutlet weak var gLabel: UILabel!
     @IBOutlet weak var bLabel: UILabel!
     @IBOutlet weak var aLabel: UILabel!
+    
+    // --- Table View Controller ----//
+    @IBOutlet var tableView: UITableView!
+    
+    let itemsarray = [ "Person A", "Person B", "Person C", "Person D", "Person E"]
+    //     End     //
+    
 
     let pulsator = Pulsator()
     
@@ -38,6 +45,11 @@ class ViewController: UIViewController {
         sourceView.layer.superlayer?.insertSublayer(pulsator, below: sourceView.layer)
         setupInitialValues()
         pulsator.start()
+        
+        tableView.layer.borderWidth = 2
+        tableView.layer.borderColor = UIColor.blue.cgColor
+        tableView.delegate = self
+        tableView.dataSource = self
     }
 
     override func didReceiveMemoryWarning() {
@@ -108,3 +120,31 @@ class ViewController: UIViewController {
 }
 
 
+extension ViewController: UITableViewDelegate {
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        print("You Tapped Me! ")
+    }
+}
+
+
+extension ViewController: UITableViewDataSource {
+    
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return 1
+    }
+    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        return itemsarray.count
+    }
+    
+    // Section 1 -> Row 1
+    // Section 2 -> Row 1
+    
+    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        
+        cell.textLabel?.text = itemsarray[indexPath.row]
+        return cell
+    }
+    
+    
+}
