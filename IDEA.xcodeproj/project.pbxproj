@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		143CCF0B24C4576000C84C6C /* MyTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 143CCF0924C4576000C84C6C /* MyTableViewCell.swift */; };
+		143CCF0C24C4576000C84C6C /* MyTableViewCell.xib in Resources */ = {isa = PBXBuildFile; fileRef = 143CCF0A24C4576000C84C6C /* MyTableViewCell.xib */; };
 		14CF47F824BF12ED0037157B /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CF47F724BF12ED0037157B /* AppDelegate.swift */; };
 		14CF47FA24BF12ED0037157B /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CF47F924BF12ED0037157B /* SceneDelegate.swift */; };
 		14CF47FC24BF12ED0037157B /* ViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14CF47FB24BF12ED0037157B /* ViewController.swift */; };
@@ -37,6 +39,8 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
+		143CCF0924C4576000C84C6C /* MyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTableViewCell.swift; sourceTree = "<group>"; };
+		143CCF0A24C4576000C84C6C /* MyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MyTableViewCell.xib; sourceTree = "<group>"; };
 		14CF47F424BF12ED0037157B /* IDEA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IDEA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		14CF47F724BF12ED0037157B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		14CF47F924BF12ED0037157B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -112,6 +116,8 @@
 				14CF480224BF12ED0037157B /* LaunchScreen.storyboard */,
 				14CF480524BF12ED0037157B /* Info.plist */,
 				14CF482A24BF16320037157B /* MapViewController.swift */,
+				143CCF0924C4576000C84C6C /* MyTableViewCell.swift */,
+				143CCF0A24C4576000C84C6C /* MyTableViewCell.xib */,
 			);
 			path = IDEA;
 			sourceTree = "<group>";
@@ -247,6 +253,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				14CF480424BF12ED0037157B /* LaunchScreen.storyboard in Resources */,
+				143CCF0C24C4576000C84C6C /* MyTableViewCell.xib in Resources */,
 				14CF480124BF12ED0037157B /* Assets.xcassets in Resources */,
 				14CF47FF24BF12ED0037157B /* Main.storyboard in Resources */,
 			);
@@ -278,6 +285,7 @@
 				14CF47FA24BF12ED0037157B /* SceneDelegate.swift in Sources */,
 				14CF482B24BF16320037157B /* MapViewController.swift in Sources */,
 				14CF482924BF138E0037157B /* Pulsator.swift in Sources */,
+				143CCF0B24C4576000C84C6C /* MyTableViewCell.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

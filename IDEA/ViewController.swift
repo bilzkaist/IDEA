@@ -37,6 +37,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     
     // --- Table View Controller ----//
     @IBOutlet var tableView: UITableView!
+    @IBOutlet var HeadingText: UITextView!
+    @IBOutlet var SubHeadingText: UITextView!
     
     let itemsarray = [ "Person A", "Person B", "Person C", "Person D", "Person E", "Person F", "Person G", "Person H", "Person I", "Person J" ]
     //     End     //
@@ -82,10 +84,14 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         
         
         // Table
+        tableView.register(MyTableViewCell.nib(), forCellReuseIdentifier: MyTableViewCell.identifier)
         tableView.layer.borderWidth = 2
         tableView.layer.borderColor = UIColor.blue.cgColor
+       // tableView.rowHeight = UITableView.automaticDimension
+       // tableView.estimatedRowHeight = 180
         tableView.delegate = self
         tableView.dataSource = self
+    
         
         // BLE Scanning
         startScanning()
@@ -227,7 +233,14 @@ extension ViewController: UITableViewDataSource {
         return cell
     }
  */
-    
+   
+    //
+    /*
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
+    {
+        return 80 //or whatever you need
+    }
+    */
     // iBeacon Ranging
   
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -239,9 +252,9 @@ extension ViewController: UITableViewDataSource {
         return Array(beacons.values)[section].count
     }
     
+    
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-
         // Display the UUID, major, and minor for each beacon.
         let sectionkey = Array(beacons.keys)[indexPath.section]
         let beacon = beacons[sectionkey]![indexPath.row]
@@ -251,13 +264,37 @@ extension ViewController: UITableViewDataSource {
         
         let distance = String(format: "%.2f", beacon.accuracy)
         
-        IDEA_ID.append(String(format: "%d",major))
+        if major == 0
+        {
+            IDEA_ID.append(String(format: "%d",2019))
+        }
+        else
+        {
+            IDEA_ID.append(String(format: "%d",major))
+        }
+        
         IDEA_ID.append("-1DEA-")
-        IDEA_ID.append(String(format: "%d",minor))
+        if minor == 0
+        {
+            IDEA_ID.append(String(format: "%d",5610))
+        }
+        else
+        {
+            IDEA_ID.append(String(format: "%d",minor))
+        }
+        
+        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
+        customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distance) m", with: "Near", imageName: "gear")
+        IDEA_ID = ""
+        return customCell
+
+        
         
         //print(IDEA_ID)
-        cell.textLabel?.text = "ID: \(IDEA_ID)          d: \(distance) m"
-        IDEA_ID = ""
+       // cell.textLabel?.text = "ID: \(IDEA_ID)          d: \(distance) m"
+       // cell.detailTextLabel?.text = "RSSI: \(beacon.rssi)"
+        
         //cell.textLabel?.text = "ID: \(beacon.uuid.uuidString)"
         //print("UUID: \(beacon.uuid.uuidString)")
         //cell.detailTextLabel?.text = "Major: \(beacon.major) Minor: \(beacon.minor)"
