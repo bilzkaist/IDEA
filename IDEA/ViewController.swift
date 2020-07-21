@@ -39,7 +39,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     @IBOutlet var tableView: UITableView!
     @IBOutlet var HeadingText: UITextView!
     @IBOutlet var SubHeadingText: UITextView!
-    @IBOutlet var handshake: UITextView!
+    @IBOutlet var handshake: UILabel!
     
     let itemsarray = [ "Person A", "Person B", "Person C", "Person D", "Person E", "Person F", "Person G", "Person H", "Person I", "Person J" ]
     
@@ -278,7 +278,9 @@ extension ViewController: UITableViewDataSource {
         return Array(beacons.values)[section].count
     }
     
-    
+    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
+        return 60
+    }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         // Display the UUID, major, and minor for each beacon.
@@ -301,6 +303,7 @@ extension ViewController: UITableViewDataSource {
         //let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
         customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Near", imageName: UIImage(named: "BLE.png")!)
+        handshake?.text = "Handshake Count: \(beacons.count)"
         IDEA_ID = ""
         if  distance < 1.0
         {
