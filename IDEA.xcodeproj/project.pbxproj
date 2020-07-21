@@ -38,9 +38,24 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		143CCF2524C6CD8300C84C6C /* Embed App Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+			);
+			name = "Embed App Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		143CCF0924C4576000C84C6C /* MyTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MyTableViewCell.swift; sourceTree = "<group>"; };
 		143CCF0A24C4576000C84C6C /* MyTableViewCell.xib */ = {isa = PBXFileReference; lastKnownFileType = file.xib; path = MyTableViewCell.xib; sourceTree = "<group>"; };
+		143CCF1424C6CD8300C84C6C /* UserNotifications.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotifications.framework; path = System/Library/Frameworks/UserNotifications.framework; sourceTree = SDKROOT; };
+		143CCF1624C6CD8300C84C6C /* UserNotificationsUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UserNotificationsUI.framework; path = System/Library/Frameworks/UserNotificationsUI.framework; sourceTree = SDKROOT; };
 		14CF47F424BF12ED0037157B /* IDEA.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = IDEA.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		14CF47F724BF12ED0037157B /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		14CF47F924BF12ED0037157B /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
@@ -84,13 +99,33 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		143CCF0D24C6C3A200C84C6C /* CustomCell */ = {
+			isa = PBXGroup;
+			children = (
+				143CCF0A24C4576000C84C6C /* MyTableViewCell.xib */,
+				143CCF0924C4576000C84C6C /* MyTableViewCell.swift */,
+			);
+			path = CustomCell;
+			sourceTree = "<group>";
+		};
+		143CCF1324C6CD8300C84C6C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				143CCF1424C6CD8300C84C6C /* UserNotifications.framework */,
+				143CCF1624C6CD8300C84C6C /* UserNotificationsUI.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		14CF47EB24BF12ED0037157B = {
 			isa = PBXGroup;
 			children = (
+				143CCF0D24C6C3A200C84C6C /* CustomCell */,
 				14CF482724BF137A0037157B /* Pulsator */,
 				14CF47F624BF12ED0037157B /* IDEA */,
 				14CF480D24BF12ED0037157B /* IDEATests */,
 				14CF481824BF12ED0037157B /* IDEAUITests */,
+				143CCF1324C6CD8300C84C6C /* Frameworks */,
 				14CF47F524BF12ED0037157B /* Products */,
 			);
 			sourceTree = "<group>";
@@ -116,8 +151,6 @@
 				14CF480224BF12ED0037157B /* LaunchScreen.storyboard */,
 				14CF480524BF12ED0037157B /* Info.plist */,
 				14CF482A24BF16320037157B /* MapViewController.swift */,
-				143CCF0924C4576000C84C6C /* MyTableViewCell.swift */,
-				143CCF0A24C4576000C84C6C /* MyTableViewCell.xib */,
 			);
 			path = IDEA;
 			sourceTree = "<group>";
@@ -158,6 +191,7 @@
 				14CF47F024BF12ED0037157B /* Sources */,
 				14CF47F124BF12ED0037157B /* Frameworks */,
 				14CF47F224BF12ED0037157B /* Resources */,
+				143CCF2524C6CD8300C84C6C /* Embed App Extensions */,
 			);
 			buildRules = (
 			);

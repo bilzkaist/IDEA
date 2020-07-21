@@ -39,9 +39,29 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     @IBOutlet var tableView: UITableView!
     @IBOutlet var HeadingText: UITextView!
     @IBOutlet var SubHeadingText: UITextView!
+    @IBOutlet var handshake: UITextView!
     
     let itemsarray = [ "Person A", "Person B", "Person C", "Person D", "Person E", "Person F", "Person G", "Person H", "Person I", "Person J" ]
+    
+    //  ----  Radar Color ----  //
+    let redcolor = [1.0 , 0.0 , 0.0]
+    let yellowcolor = [1.0, 1.0, 0.0]
+    let greencolor = [0.0 , 1.0, 0.0]
+    let bluecolor = [0.0, 0.5, 1.0]
     //     End     //
+    
+    //  -----  Timer  -----  //
+    var bilzTimer: Timer?
+    let callTimeInterval = 1.0
+    let rssiTimeInterval = 4
+    var rssiTimeIntervalCount  = 10
+    //          End          //
+    
+    //  -----  Timer  -----  //
+    var nowTime = Date()
+    
+    //          End          //
+    
     
     // --- BLE -------//
     var locationManager: CLLocationManager!
@@ -55,13 +75,28 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var identifierBeacon = "Bilz"
     
     let uuid = UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5")!
-    let uuidArray = [UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"),UUID(uuidString: "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0")]
+    let uuidArray = [UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"),UUID(uuidString: "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0"),UUID(uuidString:                                              "20195610-0000-0000-0000-000000000000")]
     var beaconConstraints = [CLBeaconIdentityConstraint: [CLBeacon]]()
     var beacons = [CLProximity: [CLBeacon]]()
     
     var IDEA_ID = ""
     
     //     END        //
+    
+    //  ----- IDEA Distance Variables -----  //
+    let n_coeff_min = 1.8
+    let n_coeff_max = 4.3
+    var index = 0
+    var indexDouble = 1.8
+    var ratio_factor = 1.0
+    var n_coeff = 2.0
+    var pathLossFactor = 0.0
+    //                  END                  //
+    
+    //  ----- Notification  -----  //
+    
+    //            END              //
+    
     
 
     let pulsator = Pulsator()
@@ -87,14 +122,15 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         tableView.register(MyTableViewCell.nib(), forCellReuseIdentifier: MyTableViewCell.identifier)
         tableView.layer.borderWidth = 2
         tableView.layer.borderColor = UIColor.blue.cgColor
-       // tableView.rowHeight = UITableView.automaticDimension
-       // tableView.estimatedRowHeight = 180
         tableView.delegate = self
         tableView.dataSource = self
     
         
         // BLE Scanning
         startScanning()
+        
+        // Timer Start
+        bilzTimer = Timer.scheduledTimer(timeInterval: callTimeInterval, target: self, selector: #selector(runEveryTime), userInfo: nil, repeats: true)
         
         
     
@@ -107,13 +143,22 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         for region in locationManager.monitoredRegions
         {
             locationManager.stopMonitoring(for: region)
+            
         }
         
         // Stop Ranging
         for constraint in beaconConstraints.keys
         {
             locationManager.stopRangingBeacons(satisfying: constraint)
+            rSlider.value = Float(greencolor[0])
+            gSlider.value = Float(greencolor[1])
+            bSlider.value = Float(greencolor[2])
+            print(rSlider.value)
+            print(gSlider.value)
+            print(bSlider.value)
+            colorChanged(sender: nil)
         }
+        
     }
     
 
@@ -137,9 +182,16 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         durationSlider.value = 0.5
         durationChanged(sender: nil)
         
+        /*
         rSlider.value = 0
         gSlider.value = 0.455
         bSlider.value = 0.756
+         */
+        rSlider.value = Float(greencolor[0])
+        gSlider.value = Float(greencolor[1])
+        bSlider.value = Float(greencolor[2])
+        
+        
         aSlider.value = 1
         colorChanged(sender: nil)
     }
@@ -199,52 +251,25 @@ extension ViewController: UITableViewDelegate {
 
 extension ViewController: UITableViewDataSource {
     
-/*
-    func numberOfSections(in tableView: UITableView) -> Int {
-        //return beacons.count
-        return 1
-    }
-    func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        /*
-        if beacons.count == 0
-        {
-            return 0
-        }
-        else
-        {
-            return Array(beacons.values)[section].count
-        }
- */
-        return itemsarray.count
-    }
-    
-    // Section 1 -> Row 1
-    // Section 2 -> Row 1
-    
-    func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        //let secctionkey = Array(beacons.keys)[indexPath.section]
-        //let beacon = beacons[secctionkey]![indexPath.row]
-        print("Inside TableView: ", beacons)
-        //cell.textLabel?.text = "UUID: \(beacon.uuid.uuidString)"
-        
-        cell.textLabel?.text = itemsarray[indexPath.row]
-        
-        return cell
-    }
- */
-   
-    //
-    /*
-    func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat
-    {
-        return 80 //or whatever you need
-    }
-    */
+
     // iBeacon Ranging
   
     func numberOfSections(in tableView: UITableView) -> Int {
         //print("Beacons Count: ",beacons.count)
+        if (beacons.count == 0)
+        {
+            rSlider.value = Float(greencolor[0])
+            gSlider.value = Float(greencolor[1])
+            bSlider.value = Float(greencolor[2])
+            colorChanged(sender: nil)
+        }
+        else
+        {
+            rSlider.value = Float(bluecolor[0])
+            gSlider.value = Float(bluecolor[1])
+            bSlider.value = Float(bluecolor[2])
+            colorChanged(sender: nil)
+        }
         return beacons.count
     }
     
@@ -259,47 +284,48 @@ extension ViewController: UITableViewDataSource {
         let sectionkey = Array(beacons.keys)[indexPath.section]
         let beacon = beacons[sectionkey]![indexPath.row]
     
-        let major = beacon.major
-        let minor = beacon.minor
+        let major = String(format:"%02X", beacon.major)
+        let minor = String(format:"%02X", beacon.minor)
         
-        let distance = String(format: "%.2f", beacon.accuracy)
         
-        if major == 0
-        {
-            IDEA_ID.append(String(format: "%d",2019))
-        }
-        else
-        {
-            IDEA_ID.append(String(format: "%d",major))
-        }
+        //let distance = beacon.accuracy
+        let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: beacon.rssi, n: 2.2)
         
+        let distanceStr = String(format: "%.2f", distance)
+    
+        IDEA_ID.append(major)
         IDEA_ID.append("-1DEA-")
-        if minor == 0
+        IDEA_ID.append(minor)
+
+        //let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+        let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
+        customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Near", imageName: "gear")
+        IDEA_ID = ""
+        if  distance < 1.0
         {
-            IDEA_ID.append(String(format: "%d",5610))
+            rSlider.value = Float(redcolor[0])
+            gSlider.value = Float(redcolor[1])
+            bSlider.value = Float(redcolor[2])
+            colorChanged(sender: nil)
+        }
+        else if distance < 2.0 && distance > 1.0
+        {
+            rSlider.value = Float(yellowcolor[0])
+            gSlider.value = Float(distance - 1.0)
+            bSlider.value = Float(yellowcolor[2])
+            colorChanged(sender: nil)
         }
         else
         {
-            IDEA_ID.append(String(format: "%d",minor))
+            rSlider.value = Float(bluecolor[0])
+            gSlider.value = Float(bluecolor[1])
+            bSlider.value = Float(bluecolor[2])
+            colorChanged(sender: nil)
         }
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
-        let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
-        customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distance) m", with: "Near", imageName: "gear")
-        IDEA_ID = ""
+        
         return customCell
 
-        
-        
-        //print(IDEA_ID)
-       // cell.textLabel?.text = "ID: \(IDEA_ID)          d: \(distance) m"
-       // cell.detailTextLabel?.text = "RSSI: \(beacon.rssi)"
-        
-        //cell.textLabel?.text = "ID: \(beacon.uuid.uuidString)"
-        //print("UUID: \(beacon.uuid.uuidString)")
-        //cell.detailTextLabel?.text = "Major: \(beacon.major) Minor: \(beacon.minor)"
-        
-        return cell
     }
  
     
@@ -307,7 +333,7 @@ extension ViewController: UITableViewDataSource {
     
     func startScanning()
     {
-        print("Started Scanning !!!")
+        //print("Started Scanning !!!")
         //var closestBeacon: CLBeacon? = nil
         self.locationManager.requestWhenInUseAuthorization()
         
@@ -412,3 +438,95 @@ extension ViewController: CLLocationManagerDelegate {
 }
 
 // End of BLE Functions Advertising Code   //
+
+
+extension ViewController
+{
+    @objc func runEveryTime()
+    {
+        nowTime = Date()
+        print("One Second Called at ")
+        print("IDEA ID: ",generate_IDEA_ID(with: 2019, with: 5610, with: ""))
+        print(nowTime)
+    }
+    
+    func generate_IDEA_ID(with major: Int, with minor: Int, with other: String)-> String
+    {
+        var local_IDEA_ID = "1DEA-"
+        let local_Major = String(format:"%02X", major)
+        let local_Minor = String(format:"%02X", minor)
+        let local_Time  = String(format:"%02X", Date() as CVarArg)
+        
+        local_IDEA_ID.append(local_Major)
+        local_IDEA_ID.append("-")
+        local_IDEA_ID.append(local_Minor)
+        local_IDEA_ID.append("-")
+        local_IDEA_ID.append(local_Time)
+        print("Local Time: ",local_Time)
+        print("Local IDEA ID: ",local_IDEA_ID)
+        return local_IDEA_ID
+    }
+    
+    func getDistance_RSSI(txCalibratedPower: Int, rssi: Int) -> Double
+    {
+        if rssi == 0 {
+            return -1
+        }
+        if (rssi < txCalibratedPower)
+        {
+            n_coeff = 2.0
+            let delta_rssi = Double(txCalibratedPower - rssi)
+            let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * n_coeff))))
+            return accuracy
+        }
+        else{
+            n_coeff = 2.0
+            let delta_rssi = Double(txCalibratedPower - rssi)
+            let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * n_coeff))))
+            return (accuracy * n_coeff)
+        }
+    }
+    
+    // PL  = PLo + 10nLog10.RSSI
+     // d   = 10power[(CalibratedPower - RSSI - (PLo - PL))/10n]
+    func get_IDEA_Distance(txCalibratedPower: Int, rssi: Int, n: Double) -> Double
+    {
+        if rssi == 0
+        {
+            return -1
+        }
+        let opt_n_coeff = n
+        let delta_rssi = Double(txCalibratedPower - rssi)
+         ratio_factor = Double(Double(rssi)/Double(txCalibratedPower))
+      /*   if txCalibratedPower > rssi
+         {
+             ratio_factor = Double(log(pow(delta_rssi,((delta_rssi/10) + 1))))
+         }
+         if txCalibratedPower <= rssi {
+             ratio_factor = 1
+         }
+         */
+         let plo = 40.0
+       //  print(ratio_factor)
+         let pl = Double(plo + (10 * n_coeff * log(Double(ratio_factor))))
+        // print(pl)
+         let delta_pl = Double(plo - pl)
+         pathLossFactor = ratio_factor//(1.0 + delta_pl/plo)
+         let distance = Double(pow(10.0,Double((delta_rssi-delta_pl)/(10.0 * opt_n_coeff))))
+         /*
+         if txCalibratedPower > rssi{
+             let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * opt_n_coeff))) + 0.1*ratio_factor)
+             return accuracy
+         }
+         else
+         {
+             let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * opt_n_coeff))))
+             return accuracy
+         }
+         */
+         return distance
+         
+     }
+}
+
+
