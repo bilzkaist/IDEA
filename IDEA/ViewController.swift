@@ -93,8 +93,9 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var pathLossFactor = 0.0
     //                  END                  //
     
-    //  ----- Notification  -----  //
-    
+    //  ----- Custom Alert  -----  //
+    let distanceAlert = MyAlert()
+    var distanceAlertFlag = false
     //            END              //
     
     
@@ -303,6 +304,12 @@ extension ViewController: UITableViewDataSource {
         IDEA_ID = ""
         if  distance < 1.0
         {
+            if distanceAlertFlag == false
+            {
+                distanceAlert.showAlert(with: "WARNING !!!", message: "Social Distancing Rule is violeted !!!", on: self)
+                distanceAlertFlag = true
+            }
+            
             rSlider.value = Float(redcolor[0])
             gSlider.value = Float(redcolor[1])
             bSlider.value = Float(redcolor[2])
@@ -310,6 +317,12 @@ extension ViewController: UITableViewDataSource {
         }
         else if distance < 2.0 && distance > 1.0
         {
+            if distanceAlertFlag == true
+            {
+                distanceAlert.dismissAlert()
+                distanceAlertFlag = false
+            }
+            
             rSlider.value = Float(yellowcolor[0])
             gSlider.value = Float(distance - 1.0)
             bSlider.value = Float(yellowcolor[2])
@@ -317,6 +330,11 @@ extension ViewController: UITableViewDataSource {
         }
         else
         {
+            if distanceAlertFlag == true
+            {
+                distanceAlert.dismissAlert()
+                distanceAlertFlag = false
+            }
             rSlider.value = Float(bluecolor[0])
             gSlider.value = Float(bluecolor[1])
             bSlider.value = Float(bluecolor[2])
@@ -527,6 +545,94 @@ extension ViewController
          return distance
          
      }
+}
+
+extension ViewController
+{
+    
+    @objc func dismissAlert()
+    {
+        distanceAlert.dismissAlert()
+    }
+}
+
+class MyAlert
+{
+    struct Constants
+    {
+        static let backgroundAlphaTo: CGFloat = 0.6
+    }
+    
+    private let backgroundView: UIView =
+    {
+        let backgroundView = UIView()
+        backgroundView.backgroundColor = .red
+        backgroundView.alpha = 0
+        return backgroundView
+        
+    }()
+    
+    private let alertView:UIView  =
+    {
+        let alert = UIView()
+        alert.backgroundColor = .white
+        alert.layer.masksToBounds = true
+        alert.layer.cornerRadius = 12
+        return alert
+    }()
+    
+    private var mytargetView: UIView?
+    
+    func showAlert(with title: String, message: String, on ViewController: UIViewController)
+    {
+        guard let targetView = ViewController.view else { return }
+        mytargetView = targetView
+        
+        backgroundView.frame = targetView.bounds
+        targetView.addSubview(backgroundView)
+        targetView.addSubview(alertView)
+        alertView.frame = CGRect(x: 40, y: -300, width: targetView.frame.size.width-80, height: 300)
+        let titleLabel = UILabel(frame: CGRect(x: 0, y: 0, width: alertView.frame.size.width, height: 80))
+        titleLabel.text = title
+        titleLabel.textAlignment = .center
+        alertView.addSubview(titleLabel)
+        
+        let messageLabel = UILabel(frame: CGRect(x: 0, y: 80, width: alertView.frame.size.width, height: 170))
+        messageLabel.numberOfLines = 0
+        messageLabel.text = message
+        messageLabel.textAlignment = .left
+        alertView.addSubview(messageLabel)
+        
+        let button = UIButton(frame: CGRect(x: 0, y: alertView.frame.size.height-50, width: alertView.frame.size.width, height: 50))
+        
+        button.setTitle("Dismiss", for: .normal)
+        button.setTitleColor(.link, for: .normal)
+        button.addTarget(self, action: #selector(dismissAlert), for: .touchUpInside)
+        alertView.addSubview(button)
+        UIView.animate(withDuration: 0.25, animations: {self.backgroundView.alpha = Constants.backgroundAlphaTo}, completion:
+            {
+                done in if done
+                {
+                    UIView.animate(withDuration: 0.25, animations: {self.alertView.center = targetView.center})
+                }
+        })
+        
+    }
+    
+    @objc func dismissAlert()
+    {
+        guard let targetView = mytargetView else { return }
+        UIView.animate(withDuration: 0.25, animations: {self.alertView.frame = CGRect(x: 40, y: targetView.frame.size.height, width: targetView.frame.size.width-80, height: 300)}, completion:
+            {
+                done in if done
+                {
+                    UIView.animate(withDuration: 0.25, animations: {self.backgroundView.alpha = 0}, completion: {done in if done {self.alertView.removeFromSuperview()
+                        self.backgroundView.removeFromSuperview()
+                        } })
+                }
+        })
+    }
+    
 }
 
 
