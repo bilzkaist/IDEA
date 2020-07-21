@@ -300,7 +300,7 @@ extension ViewController: UITableViewDataSource {
 
         //let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
-        customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Near", imageName: "gear")
+        customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Near", imageName: UIImage(named: "BLE.png")!)
         IDEA_ID = ""
         if  distance < 1.0
         {

@@ -17,7 +17,7 @@ class MyTableViewCell: UITableViewCell {
         return UINib(nibName: "MyTableViewCell", bundle: nil)
     }
     
-    public func configure(with uuid: String, with title: String, with subtitle: String, with rssi: String, with distance: String, with status: String, imageName: String)
+    public func configure(with uuid: String, with title: String, with subtitle: String, with rssi: String, with distance: String, with status: String, imageName: UIImage)
     {
         myUUID.text = uuid
         myLabel.text = title
@@ -25,7 +25,7 @@ class MyTableViewCell: UITableViewCell {
         myRSSI.text = rssi
         myDistance.text = distance
         myStatus.text  = status
-        myImageView.image = UIImage(systemName: imageName)
+        myImageView.image = imageName
     }
     
     @IBOutlet var myImageView: UIImageView!
