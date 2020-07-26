@@ -91,6 +91,17 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var ratio_factor = 1.0
     var n_coeff = 2.0
     var pathLossFactor = 0.0
+    var optimal_RSSI = -99
+    var optimal_RSSI_Arr = [0, -99, -99, -99, -99, -99]
+    var optimal_RSSI_Index = Int(1)
+    var optimal_Distance = 0.0
+    var tradition_Distance = 0.0
+    var IDEA_Distance = 0.0
+    var optimal_IDEA_Distance_arr = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    var n_coeff_IDEA_Distance_arr = [1.8, 2.0, 2.2 ,2.4 ,2.6, 2.8, 3.0, 4.0, 4.2]
+    var opt_DistanceRange = [99.0, 0.0, 0.0, 0.0]
+    var txCalibratedPower = -59//-50  //-59 Default
+    var optimal_IDEA_Multi_Distances_Str = ""
     //                  END                  //
     
     //  ----- Custom Alert  -----  //
@@ -98,6 +109,97 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var distanceAlertFlag = false
     //            END              //
     
+    //  ----- Motion & Motion Manager  ------  //
+    let motion = CMMotionManager()
+    let motionManager = CMMotionManager()
+    var deviceMotionStatus = "None"
+    
+    let DYNAMIC = 1
+    let STATIC = 0
+    
+    var acc_int_tol = 2
+    
+      var acc_raw_x = 0.0
+      var acc_raw_y = 0.0
+      var acc_raw_z = 0.0
+      
+      var acc_use_x = 0.0
+      var acc_use_y = 0.0
+      var acc_use_z = 0.0
+      
+      var acc_int_x = 0
+      var acc_int_y = 0
+      var acc_int_z = 0
+      
+      var acc_origin_x = 99
+      var acc_origin_y = 99
+      var acc_origin_z = 99
+
+      var acc_last_x = 0
+      var acc_last_y = 0
+      var acc_last_z = 0
+      
+      var acc_cur_x = 1
+      var acc_cur_y = 1
+      var acc_cur_z = 1
+      
+      var acc_next_x = 2
+      var acc_next_y = 2
+      var acc_next_z = 2
+      
+      var acc_diff_x = 0
+      var acc_diff_y = 0
+      var acc_diff_z = 0
+      
+      var acc_display_x = 0
+      var acc_display_y = 0
+      var acc_display_z = 0
+    
+      var mag_int_tol = 2
+    
+      var mag_raw_x = 0.0
+      var mag_raw_y = 0.0
+      var mag_raw_z = 0.0
+      
+      var mag_use_x = 0.0
+      var mag_use_y = 0.0
+      var mag_use_z = 0.0
+      
+      var mag_int_x = 0
+      var mag_int_y = 0
+      var mag_int_z = 0
+      
+      var mag_origin_x = 99
+      var mag_origin_y = 99
+      var mag_origin_z = 99
+
+      var mag_last_x = 0
+      var mag_last_y = 0
+      var mag_last_z = 0
+      
+      var mag_cur_x = 1
+      var mag_cur_y = 1
+      var mag_cur_z = 1
+      
+      var mag_next_x = 2
+      var mag_next_y = 2
+      var mag_next_z = 2
+      
+      var mag_diff_x = 0
+      var mag_diff_y = 0
+      var mag_diff_z = 0
+      
+      var mag_display_x = 0
+      var mag_display_y = 0
+      var mag_display_z = 0
+    
+      
+      
+      var xyzArray = [Int(0),Int(0),Int(0),Int(0)]
+      var xyzCG_initial = [Int(0),Int(0),Int(0),Int(0)]
+      var xyzGG_final = [Int(0),Int(0),Int(0),Int(0)]
+      
+    //                  END                    //
     
 
     let pulsator = Pulsator()
@@ -263,6 +365,7 @@ extension ViewController: UITableViewDataSource {
             gSlider.value = Float(greencolor[1])
             bSlider.value = Float(greencolor[2])
             colorChanged(sender: nil)
+            handshake?.text = "Handshake Count: nil"
         }
         else
         {
@@ -292,17 +395,30 @@ extension ViewController: UITableViewDataSource {
         
         
         //let distance = beacon.accuracy
-        let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: beacon.rssi, n: 2.2)
+        optimal_RSSI = get_Optimal_RSSI(optimal_rssi: optimal_RSSI, beacon_rssi: beacon.rssi)
+        
+        computeMultiDistances()
+        
+        let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: optimal_RSSI, n: 2.2)
+        let distanceiBeacon = beacon.accuracy
+        let distanceTradition = getDistance_RSSI(txCalibratedPower: -59, rssi: beacon.rssi)
+        
+        
         
         let distanceStr = String(format: "%.2f", distance)
+        let distanceiBeaconStr = String(format: "%.2f", distanceiBeacon)
+        let distanceTraditionStr = String(format: "%.2f", distanceTradition)
     
+        /*
         IDEA_ID.append(major)
         IDEA_ID.append("-1DEA-")
         IDEA_ID.append(minor)
+        */
+        IDEA_ID = generate_IDEA_ID(major: major, minor: minor, other: "Bilz")
 
         //let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
-        customCell.configure(with: "UUID: \(beacon.uuid)", with: "IDEA ID: \(IDEA_ID)", with: "ID Detail: Major:  \(beacon.major) & Minor: \(beacon.minor)", with: "RSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Near", imageName: UIImage(named: "BLE.png")!)
+        customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m", with: "RSSI: \(optimal_RSSI)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
         handshake?.text = "Handshake Count: \(beacons.count)"
         IDEA_ID = ""
         if  distance < 1.0
@@ -461,28 +577,85 @@ extension ViewController: CLLocationManagerDelegate {
 // End of BLE Functions Advertising Code   //
 
 
+// WD Timer //
 extension ViewController
 {
     @objc func runEveryTime()
+       {
+           nowTime = Date()
+           print("One Second Called at ")
+           print("IDEA ID: ",generate_IDEA_ID(major: "2019", minor: "5610", other: ""))
+           print(nowTime)
+           if isDeviceMove()==false
+           {
+               // Do Something here
+           }
+           else
+           {
+               // Do Something here
+           }
+       }
+}
+
+
+//
+
+
+
+
+
+extension ViewController
+{
+   
+    func generate_IDEA_ID(major: String, minor: String, other: String)-> String
     {
-        nowTime = Date()
-        print("One Second Called at ")
-        print("IDEA ID: ",generate_IDEA_ID(with: 2019, with: 5610, with: ""))
-        print(nowTime)
-    }
-    
-    func generate_IDEA_ID(with major: Int, with minor: Int, with other: String)-> String
-    {
+        /*
+         let date = Date()
+
+         // MARK: Way 1
+
+         let components = date.get(.day, .month, .year)
+         if let day = components.day, let month = components.month, let year = components.year {
+             print("day: \(day), month: \(month), year: \(year)")
+         }
+         
+         let formatter = DateFormatter()
+         formatter.dateFormat = "hh a" // "a" prints "pm" or "am"
+         let hourString = formatter.string(from: Date()) // "12 AM"
+         */ /*UUID333-Major-83167-Minor55*/
+        
+        let nowDate = Date()
         var local_IDEA_ID = "1DEA-"
-        let local_Major = String(format:"%02X", major)
-        let local_Minor = String(format:"%02X", minor)
+        //let local_Major = String(format:"%02X", major)
+        //let local_Minor = String(format:"%02X", minor)
+        let local_Major = major
+        let local_Minor = minor
         let local_Time  = String(format:"%02X", Date() as CVarArg)
+        let components = nowDate.get(.day, .month, .year)
+        let local_Year = String(nowDate.get(.year))
+        let local_Month = String(nowDate.get(.month))
+        let local_Day = String(nowDate.get(.day))
+        let formatter = DateFormatter()
+        formatter.dateFormat = "hh a" // "a" prints "pm" or "am"
+        let local_Hour2 = formatter.string(from: Date()) // "12 AM"
+        
+        let local_Hour = String(Calendar.current.component(.hour, from: Date()))
         
         local_IDEA_ID.append(local_Major)
         local_IDEA_ID.append("-")
         local_IDEA_ID.append(local_Minor)
         local_IDEA_ID.append("-")
-        local_IDEA_ID.append(local_Time)
+        local_IDEA_ID.append(local_Year)
+        //local_IDEA_ID.append("-")
+        local_IDEA_ID.append(local_Month)
+        //local_IDEA_ID.append("-")
+        local_IDEA_ID.append(local_Day)
+        local_IDEA_ID.append("-")
+        //local_IDEA_ID.append(local_Hour2)
+        //local_IDEA_ID.append("-")
+        local_IDEA_ID.append(local_Hour)
+        //local_IDEA_ID.append("-")
+        //local_IDEA_ID.append(other)
         print("Local Time: ",local_Time)
         print("Local IDEA ID: ",local_IDEA_ID)
         return local_IDEA_ID
@@ -549,6 +722,17 @@ extension ViewController
          
      }
 }
+
+extension Date {
+    func get(_ components: Calendar.Component..., calendar: Calendar = Calendar.current) -> DateComponents {
+        return calendar.dateComponents(Set(components), from: self)
+    }
+
+    func get(_ component: Calendar.Component, calendar: Calendar = Calendar.current) -> Int {
+        return calendar.component(component, from: self)
+    }
+}
+
 
 extension ViewController
 {
@@ -639,3 +823,233 @@ class MyAlert
 }
 
 
+
+extension ViewController
+{
+    
+    func get_Optimal_RSSI(optimal_rssi: Int, beacon_rssi: Int)->(Int)
+    {
+
+        if optimal_rssi == 0
+        {
+            return -99
+        }
+        if isDeviceMove() == false
+        {
+            //deviceMotion = "The device is Static"
+            if (beacon_rssi != 0 )
+            {
+                if optimal_rssi < beacon_rssi
+                {
+                    return beacon_rssi
+                }
+            }
+        }
+        else
+        {
+            //deviceMotion = "The device is Dynamic"
+            if(beacon_rssi != 0)
+            {
+                return beacon_rssi
+            }
+                     // distance = distanceXYZ.squareRoot().rounded()
+        }
+        
+        if rssiTimeIntervalCount > 0
+        {
+            rssiTimeIntervalCount = rssiTimeIntervalCount - 1
+        }
+        else
+        {
+            rssiTimeIntervalCount = rssiTimeInterval
+            return beacon_rssi
+        }
+        return optimal_rssi
+    }
+    
+    func computeMultiDistances()
+    {
+
+        let array_size = optimal_IDEA_Distance_arr.count
+        while index < array_size
+        {
+            optimal_IDEA_Distance_arr[index] = get_IDEA_Distance(txCalibratedPower: txCalibratedPower, rssi: optimal_RSSI, n: n_coeff_IDEA_Distance_arr[index])
+            optimal_IDEA_Multi_Distances_Str.append(String (format: "%.2f, ", optimal_IDEA_Distance_arr[index]))
+            print(optimal_IDEA_Multi_Distances_Str)
+            index = index + 1
+        }
+        
+        
+        
+        /*
+        while indexDouble < n_coeff_max {
+            
+            //print(n_coeff_arr)
+            //optimal_Distance_arr[index] = get_BJ_Distance(txCalibratedPower: txCalibratedPower, rssi: optimal_RSSI, n: n_coeff_arr[index])
+            if optimal_RSSI != 0{
+                optimal_Distance =  get_IDEA_Distance(txCalibratedPower: txCalibratedPower, rssi: optimal_RSSI, n: indexDouble)
+            }
+            if opt_DistanceRange[0] > optimal_Distance{
+                opt_DistanceRange[0] = optimal_Distance
+                opt_DistanceRange[1] = indexDouble
+            }
+            if opt_DistanceRange[2] < optimal_Distance{
+                opt_DistanceRange[2] = optimal_Distance
+                opt_DistanceRange[3] = indexDouble
+            }
+            
+           // opt_DistanceRange[1] = (opt_DistanceRange[0] + opt_DistanceRange[2])/2
+            //remarksStr.append(String (format: "%.2f, ", optimal_Distance_arr[index]))
+            //print(remarksStr)
+            //index = index + 1
+            indexDouble = indexDouble + 0.1
+        
+        }
+        indexDouble = n_coeff_min
+ */
+    }
+    
+    func isDeviceMove()-> Bool
+    {
+        
+        if self.motion.isAccelerometerAvailable {
+            self.motion.accelerometerUpdateInterval = 1.0 / 60.0  // 60 Hz
+            self.motion.startAccelerometerUpdates()
+            
+        }
+         
+          
+           
+           if let xValue = motion.accelerometerData?.acceleration.x {
+               acc_raw_x = xValue
+           }
+           if let yValue = motion.accelerometerData?.acceleration.y {
+               acc_raw_y = yValue
+           }
+           if let zValue = motion.accelerometerData?.acceleration.z {
+               acc_raw_z = zValue
+           }
+           
+        
+           
+           
+           acc_use_x = (acc_raw_x * 100)
+           acc_use_y = (acc_raw_y * 100)
+           acc_use_z = (acc_raw_z * 100)
+           
+          
+           
+           acc_int_x = Int(acc_use_x)
+           acc_int_y = Int(acc_use_y)
+           acc_int_z = Int(acc_use_z)
+           
+        
+           
+           acc_diff_x = abs(acc_cur_x-acc_int_x)
+           acc_diff_y = abs(acc_cur_y-acc_int_y)
+           acc_diff_z = abs(acc_cur_z-acc_int_z)
+        
+           if acc_diff_x  < acc_int_tol {
+                 //  print("Status:  Static at X ")
+                   xyzArray[0] = 0
+                   acc_display_x = acc_cur_x
+           }
+           else{
+                //  print("Status:  Dynamic at X ")
+                  xyzArray[0] = 1
+                  acc_last_x = acc_cur_x
+                  acc_display_x = acc_cur_x
+                  acc_cur_x  = acc_int_x
+           }
+             //  print("Difference of Y = ",acc_diff_y)
+            //   print("acc_display_y = ",acc_display_y)
+            //   print("acc_cur_y = ",acc_cur_y)
+             //  print("acc_int_y = ", acc_int_y)
+           if acc_diff_y  < acc_int_tol {
+                  // print("Status:  Static at Y ")
+                   xyzArray[1] = 0
+                   acc_display_y = acc_cur_y
+           }
+           else{
+                 //  print("Status:  Dynamic at Y ")
+                   xyzArray[1] = 1
+                  acc_last_y = acc_cur_y
+                  acc_display_y = acc_cur_y
+                  acc_cur_y  = acc_int_y
+           }
+           //    print("Difference of Z = ",acc_diff_z)
+            //   print("acc_display_z = ",acc_display_z)
+            //   print("acc_cur_z = ",acc_cur_z)
+            //   print("acc_int_z = ", acc_int_z)
+           if acc_diff_z  < acc_int_tol {
+                   //print("Status:  Static at Z ")
+                   xyzArray[2] = 0
+                   acc_display_z = acc_cur_z
+                   
+           }
+           else{
+                  // print("Status:  Dynamic at Z ")
+                   xyzArray[2] = 1
+                  acc_last_z = acc_cur_z
+                  acc_display_z = acc_cur_z
+                  acc_cur_z  = acc_int_z
+                  
+           }
+           xyzArray[3] = xyzArray[0]+xyzArray[1]+xyzArray[2]
+           if xyzArray[3] == STATIC {
+               deviceMotionStatus = "Static"
+             //  print(deviceMotionStatus)
+               return false
+           }
+           else{
+               deviceMotionStatus = "Dynamic"
+             //  print(deviceMotionStatus)
+               return true
+           }
+        
+        
+    }
+    
+    func getNoise() -> Double{
+        
+        if motionManager.isMagnetometerAvailable {
+            motionManager.magnetometerUpdateInterval = 0.1
+            motionManager.startMagnetometerUpdates(to: OperationQueue.main) { (data, error) in
+                //print(data)
+            }
+        }
+        if let xValue = motionManager.magnetometerData?.magneticField.x {
+            mag_raw_x = xValue
+        }
+        if let yValue = motionManager.magnetometerData?.magneticField.y {
+            mag_raw_y = yValue
+        }
+        if let zValue = motionManager.magnetometerData?.magneticField.z {
+            mag_raw_z = zValue
+        }
+        print(mag_raw_x)
+        mag_display_x = Int(mag_raw_x)
+        mag_display_y = Int(mag_raw_y)
+        mag_display_z = Int(mag_raw_z)
+        print(" Mag X : ")
+        print(mag_display_x)
+        print(" Mag Y : ")
+        print(mag_display_y)
+        print(" Mag Z : ")
+        print(mag_display_z)
+        mag_use_x = (mag_raw_x * 100)
+        mag_use_y = (mag_raw_y * 100)
+        mag_use_z = (mag_raw_z * 100)
+        
+        mag_int_x = Int(mag_use_x)
+        mag_int_y = Int(mag_use_y)
+        mag_int_z = Int(mag_use_z)
+       
+        mag_diff_x = abs(mag_cur_x-acc_int_x)
+        mag_diff_y = abs(mag_cur_y-acc_int_y)
+        mag_diff_z = abs(mag_cur_z-acc_int_z)
+        
+        let noise = 0.0
+        return noise
+    }
+}
