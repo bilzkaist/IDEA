@@ -69,13 +69,18 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var localBeacon: CLBeaconRegion!
     var beaconPeripheralData: NSDictionary!
     var peripheralManager: CBPeripheralManager!
-    var localBeaconUUID = "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"
+    var localBeaconUUID = "DA57A814-1DEA-DEED-AED1-418A75AD1000"//"5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"
+    var localBeaconUUID_14 = "DA57A814-1DEA-DEED-AED1-418A75AD"
+    var localBeaconUUID_02 = "0000"
     var localBeaconMajor: CLBeaconMajorValue = 2019
     var localBeaconMinor: CLBeaconMinorValue = 5610
     var identifierBeacon = "Bilz"
     
     let uuid = UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5")!
     let uuidArray = [UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"),UUID(uuidString: "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0"),UUID(uuidString:                                              "20195610-0000-0000-0000-000000000000")]
+    let scanningUUIDArray = (1000...9999).map{UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD\($0)")}
+    //var scanningUUIDArrayDynamic = (0...9).map{"DA57A814-1DEA-DEED-AED1-418A75AD00D\($0)"}
+    //var UUIDArray000A_F = ("A"..."F").map{"DA57A814-1DEA-DEED-AED1-418A75AD000\($0)"}
     var beaconConstraints = [CLBeaconIdentityConstraint: [CLBeacon]]()
     var beacons = [CLProximity: [CLBeacon]]()
     
@@ -233,7 +238,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         startScanning()
         
         // Timer Start
-        bilzTimer = Timer.scheduledTimer(timeInterval: callTimeInterval, target: self, selector: #selector(runEveryTime), userInfo: nil, repeats: true)
+     //   bilzTimer = Timer.scheduledTimer(timeInterval: callTimeInterval, target: self, selector: #selector(runEveryTime), userInfo: nil, repeats: true)
         
         
     
@@ -399,7 +404,15 @@ extension ViewController: UITableViewDataSource {
         
         computeMultiDistances()
         
-        let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: optimal_RSSI, n: 2.2)
+        if (optimal_RSSI<txCalibratedPower)
+        {
+            n_coeff = n_coeff_max
+        }
+        else
+        {
+            n_coeff = n_coeff_min
+        }
+        let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: optimal_RSSI, n: n_coeff)
         let distanceiBeacon = beacon.accuracy
         let distanceTradition = getDistance_RSSI(txCalibratedPower: -59, rssi: beacon.rssi)
         
@@ -417,13 +430,18 @@ extension ViewController: UITableViewDataSource {
         IDEA_ID = generate_IDEA_ID(major: major, minor: minor, other: "Bilz")
 
         //let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
+      
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
-        customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m", with: "RSSI: \(optimal_RSSI)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
+        customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m", with: "RSSI: \(optimal_RSSI)", with: "uRSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
         handshake?.text = "Handshake Count: \(beacons.count)"
         IDEA_ID = ""
+        
+        let secLastDig = getDistanceMeter(distance: distance)
+        print(secLastDig)
+     
         if  distance < 1.0
         {
-            if distanceAlertFlag == false
+            if distanceAlertFlag != false
             {
                 distanceAlert.showAlert(with: "WARNING !!!", message: "Social Distancing Rule is violeted !!!", on: self)
                 distanceAlertFlag = true
@@ -474,7 +492,7 @@ extension ViewController: UITableViewDataSource {
         //var closestBeacon: CLBeacon? = nil
         self.locationManager.requestWhenInUseAuthorization()
         
-        for uui in uuidArray
+        for uui in scanningUUIDArray
         {
             let constraint = CLBeaconIdentityConstraint(uuid: uui!)
             self.beaconConstraints[constraint] = []
@@ -586,6 +604,8 @@ extension ViewController
            print("One Second Called at ")
            print("IDEA ID: ",generate_IDEA_ID(major: "2019", minor: "5610", other: ""))
            print(nowTime)
+   
+        
            if isDeviceMove()==false
            {
                // Do Something here
@@ -1051,5 +1071,35 @@ extension ViewController
         
         let noise = 0.0
         return noise
+    }
+}
+
+
+extension ViewController
+{
+    func updateUUID(cuurentUUID: String, motion: Bool, distance: Double, noise: String)-> String
+    {
+        let UUID_Str = ""
+        return UUID_Str
+    }
+    /*
+    func  getDistance<String> (inputArray:Array<String>, distance:Double) -> Array <String>
+    {
+        var distanceArray = inputArray
+        var distanceMeter = Int(distance)
+        var distanceCentiMeter = Int ((distance - Double(distanceMeter)) * 10)
+        distanceArray[0] = String(format: "%d",distanceMeter)
+        distanceArray[1] = String(distanceCentiMeter)
+        return distanceArray
+    }
+ */
+    func getDistanceMeter (distance:Double)-> String
+    {
+        return String(Int(distance))
+    }
+    
+    func getDistanceCentiMeter (distance:Double)-> String
+    {
+        return String(Int ((distance - Double(Int(distance)) * 10)))
     }
 }

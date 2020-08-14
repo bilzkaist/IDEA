@@ -17,12 +17,13 @@ class MyTableViewCell: UITableViewCell {
         return UINib(nibName: "MyTableViewCell", bundle: nil)
     }
     
-    public func configure(with uuid: String, with title: String, with subtitle: String, with rssi: String, with distance: String, with status: String, imageName: UIImage)
+    public func configure(with uuid: String, with title: String, with subtitle: String, with rssi: String, with rssibeacon: String, with distance: String, with status: String, imageName: UIImage)
     {
         myUUID.text = uuid
         myLabel.text = title
         mySubLabel.text = subtitle
         myRSSI.text = rssi
+        myRSSIBeacon.text = rssibeacon
         myDistance.text = distance
         myStatus.text  = status
         myImageView.image = imageName
@@ -33,8 +34,10 @@ class MyTableViewCell: UITableViewCell {
     @IBOutlet var myLabel: UILabel!
     @IBOutlet var mySubLabel: UILabel!
     @IBOutlet var myRSSI: UILabel!
+    @IBOutlet var myRSSIBeacon: UILabel!
     @IBOutlet var myDistance: UILabel!
     @IBOutlet var myStatus: UILabel!
+    
     
     
     override func awakeFromNib() {
