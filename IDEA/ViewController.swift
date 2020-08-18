@@ -52,7 +52,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     
     //  -----  Timer  -----  //
     var bilzTimer: Timer?
-    let callTimeInterval = 1.0
+    let callTimeInterval = 1.1
     let rssiTimeInterval = 4
     var rssiTimeIntervalCount  = 10
     //          End          //
@@ -69,16 +69,57 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var localBeacon: CLBeaconRegion!
     var beaconPeripheralData: NSDictionary!
     var peripheralManager: CBPeripheralManager!
-    var localBeaconUUID = "DA57A814-1DEA-DEED-AED1-418A75AD1000"//"5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"
-    var localBeaconUUID_14 = "DA57A814-1DEA-DEED-AED1-418A75AD"
-    var localBeaconUUID_02 = "0000"
-    var localBeaconMajor: CLBeaconMajorValue = 2019
-    var localBeaconMinor: CLBeaconMinorValue = 5610
+    var localBeaconUUID = "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"
+    let localBeaconUUID_14_Static = "DA57A814-1DEA-DEED-AED1-418A75AD"
+    var localBeaconUUID_02_Dynamic = "1000"
+    var localIDEAUUID = "DA57A814-1DEA-DEED-AED1-418A75AD1000"
+    var localBeaconMajor: CLBeaconMajorValue = 1000
+    var localBeaconMinor: CLBeaconMinorValue = 0001
     var identifierBeacon = "Bilz"
     
-    let uuid = UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5")!
-    let uuidArray = [UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"),UUID(uuidString: "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0"),UUID(uuidString:                                              "20195610-0000-0000-0000-000000000000")]
-    let scanningUUIDArray = (1000...9999).map{UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD\($0)")}
+    //let uuid = UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5")!
+    let uuidArray = [
+                     UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"),
+                     UUID(uuidString: "E2C56DB5-DFFB-48D2-B060-D0F5A71096E0"),
+                     UUID(uuidString: "20195610-0000-0000-0000-000000000000"),
+                     
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1000"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1001"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1002"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1003"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1004"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1005"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1006"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1007"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1008"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1009"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD100A"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD100B"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD100C"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD100D"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD100E"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD100F"),
+                     /*
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1010"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1011"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1012"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1013"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1014"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1015"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1016"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1017"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1018"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1019"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD101A"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD101B"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD101C"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD101D"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD101E"),
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD101F"),
+                     */
+                     UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1111")
+                    ]
+    let scanningUUIDArray = (1000...2999).map{UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD\($0)")}
     //var scanningUUIDArrayDynamic = (0...9).map{"DA57A814-1DEA-DEED-AED1-418A75AD00D\($0)"}
     //var UUIDArray000A_F = ("A"..."F").map{"DA57A814-1DEA-DEED-AED1-418A75AD000\($0)"}
     var beaconConstraints = [CLBeaconIdentityConstraint: [CLBeacon]]()
@@ -117,7 +158,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     //  ----- Motion & Motion Manager  ------  //
     let motion = CMMotionManager()
     let motionManager = CMMotionManager()
-    var deviceMotionStatus = "None"
+    var deviceMotionStatus = "Static"
+    var deviceMotionStatusOther = "Static"
     
     let DYNAMIC = 1
     let STATIC = 0
@@ -238,7 +280,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         startScanning()
         
         // Timer Start
-     //   bilzTimer = Timer.scheduledTimer(timeInterval: callTimeInterval, target: self, selector: #selector(runEveryTime), userInfo: nil, repeats: true)
+        bilzTimer = Timer.scheduledTimer(timeInterval: callTimeInterval, target: self, selector: #selector(runEveryTime), userInfo: nil, repeats: true)
         
         
     
@@ -398,9 +440,12 @@ extension ViewController: UITableViewDataSource {
         let major = String(format:"%02X", beacon.major)
         let minor = String(format:"%02X", beacon.minor)
         
-        
+        let uuidParameterStr = beacon.uuid.uuidString;
+       
+        let distanceOtherDevice = extractDataFromUUID(uuidParameter: uuidParameterStr)
+        let motionOtherDevice = deviceMotionStatusOther
         //let distance = beacon.accuracy
-        optimal_RSSI = get_Optimal_RSSI(optimal_rssi: optimal_RSSI, beacon_rssi: beacon.rssi)
+        optimal_RSSI = get_Optimal_RSSI(optimal_rssi: optimal_RSSI, beacon_rssi: beacon.rssi, deviceMotionOtherDevice: motionOtherDevice)
         
         computeMultiDistances()
         
@@ -412,16 +457,18 @@ extension ViewController: UITableViewDataSource {
         {
             n_coeff = n_coeff_min
         }
-        let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: optimal_RSSI, n: n_coeff)
+       // let distance = get_IDEA_Distance(txCalibratedPower: -59, rssi: optimal_RSSI, n: n_coeff)
+        let distance_RSSI = getDistance_RSSI(txCalibratedPower: -59, rssi: optimal_RSSI)
         let distanceiBeacon = beacon.accuracy
         let distanceTradition = getDistance_RSSI(txCalibratedPower: -59, rssi: beacon.rssi)
-        
+        let distance = get_Optimal_Distance(SDD: distance_RSSI, ODD: distanceOtherDevice)
         
         
         let distanceStr = String(format: "%.2f", distance)
         let distanceiBeaconStr = String(format: "%.2f", distanceiBeacon)
         let distanceTraditionStr = String(format: "%.2f", distanceTradition)
     
+        
         /*
         IDEA_ID.append(major)
         IDEA_ID.append("-1DEA-")
@@ -432,12 +479,22 @@ extension ViewController: UITableViewDataSource {
         //let cell = tableView.dequeueReusableCell(withIdentifier: "cell", for: indexPath)
       
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
-        customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m", with: "RSSI: \(optimal_RSSI)", with: "uRSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
+        customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m and ODMS: \(motionOtherDevice)", with: "RSSI: \(optimal_RSSI)", with: "uRSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
         handshake?.text = "Handshake Count: \(beacons.count)"
         IDEA_ID = ""
         
-        let secLastDig = getDistanceMeter(distance: distance)
-        print(secLastDig)
+        if (Int(beacon.minor) == (localBeaconMinor))
+        {
+            localBeaconMinor = CLBeaconMinorValue(Int(beacon.minor) + 1 )
+        }
+        
+        // call function here
+       
+        
+        localIDEAUUID = updateUUID(distance: distance)
+        print("IDEAUUID : ",localIDEAUUID)
+        
+        
      
         if  distance < 1.0
         {
@@ -492,7 +549,7 @@ extension ViewController: UITableViewDataSource {
         //var closestBeacon: CLBeacon? = nil
         self.locationManager.requestWhenInUseAuthorization()
         
-        for uui in scanningUUIDArray
+        for uui in uuidArray//scanningUUIDArray
         {
             let constraint = CLBeaconIdentityConstraint(uuid: uui!)
             self.beaconConstraints[constraint] = []
@@ -566,10 +623,16 @@ extension ViewController: CLLocationManagerDelegate {
             stopLocalBeacon()
         }
         
-        let uuid = UUID(uuidString: localBeaconUUID)!
+        print("\nBroadcast IDEA UUID :",localIDEAUUID)
+        if (localIDEAUUID == nil)
+        {
+            localIDEAUUID = localBeaconUUID
+        }
+        let uuid = UUID(uuidString: localIDEAUUID)!
         localBeacon = CLBeaconRegion(proximityUUID: uuid, major: localBeaconMajor, minor: localBeaconMinor, identifier: identifierBeacon)
         beaconPeripheralData = localBeacon.peripheralData(withMeasuredPower: nil)
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+        
     }
     
     func stopLocalBeacon()
@@ -582,11 +645,11 @@ extension ViewController: CLLocationManagerDelegate {
     
     func peripheralManagerDidUpdateState(_ peripheral: CBPeripheralManager) {
         if peripheral.state == .poweredOn {
-            print("BLE Powered ON!")
+           // print("BLE Powered ON!")
             peripheralManager.startAdvertising(beaconPeripheralData as? [String: Any])
         }
         else if peripheral.state == .poweredOff {
-            print("BLE Powered OFF!")
+           // print("BLE Powered OFF!")
             peripheralManager.stopAdvertising()
         }
     }
@@ -600,11 +663,12 @@ extension ViewController
 {
     @objc func runEveryTime()
        {
+           startLocalBeacon()
            nowTime = Date()
-           print("One Second Called at ")
-           print("IDEA ID: ",generate_IDEA_ID(major: "2019", minor: "5610", other: ""))
-           print(nowTime)
-   
+           //print("One Second Called at ")
+           //print("IDEA ID: ",generate_IDEA_ID(major: "2019", minor: "5610", other: ""))
+          // print(nowTime)
+         //  print("\nBroadcast IDEA UUID :",localIDEAUUID)
         
            if isDeviceMove()==false
            {
@@ -676,8 +740,8 @@ extension ViewController
         local_IDEA_ID.append(local_Hour)
         //local_IDEA_ID.append("-")
         //local_IDEA_ID.append(other)
-        print("Local Time: ",local_Time)
-        print("Local IDEA ID: ",local_IDEA_ID)
+      //  print("Local Time: ",local_Time)
+      //  print("Local IDEA ID: ",local_IDEA_ID)
         return local_IDEA_ID
     }
     
@@ -688,13 +752,13 @@ extension ViewController
         }
         if (rssi < txCalibratedPower)
         {
-            n_coeff = 2.0
+            n_coeff = 2.2
             let delta_rssi = Double(txCalibratedPower - rssi)
             let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * n_coeff))))
             return accuracy
         }
         else{
-            n_coeff = 2.0
+            n_coeff = 2.2
             let delta_rssi = Double(txCalibratedPower - rssi)
             let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * n_coeff))))
             return (accuracy * n_coeff)
@@ -726,7 +790,8 @@ extension ViewController
         // print(pl)
          let delta_pl = Double(plo - pl)
          pathLossFactor = ratio_factor//(1.0 + delta_pl/plo)
-         let distance = Double(pow(10.0,Double((delta_rssi-delta_pl)/(10.0 * opt_n_coeff))))
+         //let distance = Double(pow(10.0,Double((delta_rssi-delta_pl)/(10.0 * opt_n_coeff))))
+         let distance = Double(pow(10.0,Double((delta_rssi)/(10.0 * opt_n_coeff))))
          /*
          if txCalibratedPower > rssi{
              let accuracy = Double(pow(10.0,Double((delta_rssi)/(10.0 * opt_n_coeff))) + 0.1*ratio_factor)
@@ -844,37 +909,59 @@ class MyAlert
 
 
 
+
 extension ViewController
 {
-    
-    func get_Optimal_RSSI(optimal_rssi: Int, beacon_rssi: Int)->(Int)
+    /*
+Input: OR, BR, SDMS,ODMS
+Output: OR or BR
+Function Get Optimal RSSI
+begin
+   if BR is Zero
+       return OR
+   else
+   begin
+       if SDMS & ODMS are Static
+       begin
+          if OR is greater BR
+             return OR
+         else
+             return BR
+       end
+       else
+          return BR
+   end
+end
+    */
+    func get_Optimal_RSSI(optimal_rssi: Int, beacon_rssi: Int, deviceMotionOtherDevice: String)->(Int)
     {
 
-        if optimal_rssi == 0
+        if beacon_rssi == 0
         {
-            return -99
+            return optimal_rssi
         }
-        if isDeviceMove() == false
+        //if isDeviceMove() == false
+        else
         {
-            //deviceMotion = "The device is Static"
-            if (beacon_rssi != 0 )
+            if deviceMotionStatus == "Static" && deviceMotionOtherDevice == "Static"
             {
-                if optimal_rssi < beacon_rssi
+                //deviceMotion = "The device is Static"
+                if optimal_rssi > beacon_rssi
+                {
+                    return optimal_rssi
+                }
+                else
                 {
                     return beacon_rssi
                 }
             }
-        }
-        else
-        {
-            //deviceMotion = "The device is Dynamic"
-            if(beacon_rssi != 0)
+            else
             {
+                //deviceMotion = "The device is Dynamic"
                 return beacon_rssi
             }
-                     // distance = distanceXYZ.squareRoot().rounded()
         }
-        
+        /*
         if rssiTimeIntervalCount > 0
         {
             rssiTimeIntervalCount = rssiTimeIntervalCount - 1
@@ -884,7 +971,7 @@ extension ViewController
             rssiTimeIntervalCount = rssiTimeInterval
             return beacon_rssi
         }
-        return optimal_rssi
+        return optimal_rssi*/
     }
     
     func computeMultiDistances()
@@ -895,7 +982,7 @@ extension ViewController
         {
             optimal_IDEA_Distance_arr[index] = get_IDEA_Distance(txCalibratedPower: txCalibratedPower, rssi: optimal_RSSI, n: n_coeff_IDEA_Distance_arr[index])
             optimal_IDEA_Multi_Distances_Str.append(String (format: "%.2f, ", optimal_IDEA_Distance_arr[index]))
-            print(optimal_IDEA_Multi_Distances_Str)
+            //print(optimal_IDEA_Multi_Distances_Str)
             index = index + 1
         }
         
@@ -1077,29 +1164,204 @@ extension ViewController
 
 extension ViewController
 {
-    func updateUUID(cuurentUUID: String, motion: Bool, distance: Double, noise: String)-> String
+    
+    func updateUUID (distance: Double)-> String
     {
-        let UUID_Str = ""
+        var UUID_Str = ""
+        UUID_Str.append(localBeaconUUID_14_Static)
+        UUID_Str.append("100")
+        let distanceHex = Int(distance*4.0)
+        if (distanceHex>=0 && distanceHex<9)
+        {
+            //localIDEAUUID = ""
+            if deviceMotionStatus == "Static"
+            {
+                UUID_Str.append(String(distanceHex))
+                
+            }
+            else
+            {
+                switch distanceHex
+                {
+                    case 0:
+                        UUID_Str.append("A")
+                    case 1:
+                        UUID_Str.append("B")
+                    case 2:
+                        UUID_Str.append("C")
+                    case 3:
+                        UUID_Str.append("D")
+                    case 4:
+                        UUID_Str.append("E")
+                    case 5:
+                        UUID_Str.append("F")
+                    
+                    default:
+                        UUID_Str.append("0")
+                }
+                //UUID_Str.append("100")
+            }
+           // print("IDEAUUID (Before Ammendment): ",UUID_Str)
+          //  let mDig = getDistanceMeter(distance: distance)
+           // let cmDig = getDistanceCentiMeter(distance: distance)
+           // print("Distance is ",mDig," m")
+           // print("and ",cmDig," cm")
+           /*
+            if distance < 9.0
+            {
+                UUID_Str.append(mDig)
+            }
+            else
+            {
+                //print("Double Digit Detected !!! mDig = ",mDig)
+                UUID_Str.append("F")
+            }
+            */
+            
+        }
+        else
+        {
+            UUID_Str.append("9")
+            
+        }
         return UUID_Str
     }
-    /*
-    func  getDistance<String> (inputArray:Array<String>, distance:Double) -> Array <String>
-    {
-        var distanceArray = inputArray
-        var distanceMeter = Int(distance)
-        var distanceCentiMeter = Int ((distance - Double(distanceMeter)) * 10)
-        distanceArray[0] = String(format: "%d",distanceMeter)
-        distanceArray[1] = String(distanceCentiMeter)
-        return distanceArray
-    }
- */
     func getDistanceMeter (distance:Double)-> String
     {
+        //print("Inside getDistanceMeter d : ",distance)
         return String(Int(distance))
     }
     
     func getDistanceCentiMeter (distance:Double)-> String
     {
-        return String(Int ((distance - Double(Int(distance)) * 10)))
+        var dcm = 0
+        print("Inside getDistanceCentiMeter d : ",distance)
+        if (distance<1.0)
+        {
+            dcm = (Int (distance * 100.0))
+            
+        }
+        else
+        {
+            let dr =  (distance*100.0) - (Double(Int(distance)) * 100)
+            print("dr : ",dr)
+            dcm = Int(dr)
+            
+        }
+        if (dcm > 9)
+        {
+            print("dcm : ",dcm)
+            return String (dcm)
+        }
+        else
+        {
+            let dcma = "0"+String(dcm)
+            print("dcma : ",dcma)
+            return dcma
+        }
+    }
+}
+
+
+extension ViewController
+{
+    func extractDataFromUUID(uuidParameter: String)->Double
+    {
+        let uuidParameterLast = uuidParameter.last;
+        var distanceOther = 0.0
+        print("UUID Parameter Extracted : ", uuidParameterLast)
+        switch uuidParameterLast
+        {
+            case "0":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 0.0
+            case "1":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 0.25
+            case "2":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 0.50
+            case "3":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 0.75
+            case "4":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 1.0
+            case "5":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 1.25
+            case "6":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 1.50
+            case "7":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 1.75
+            case "8":
+            deviceMotionStatusOther = "Static"
+            distanceOther = 2.00
+            case "9":
+            deviceMotionStatusOther = "Static"
+            distanceOther = -1
+            
+            case "A":
+            deviceMotionStatusOther = "Dynamic"
+            distanceOther = 0.0
+            case "B":
+            deviceMotionStatusOther = "Dynamic"
+            distanceOther = 0.5
+            case "C":
+            deviceMotionStatusOther = "Dynamic"
+            distanceOther = 1.0
+            case "D":
+            deviceMotionStatusOther = "Dynamic"
+            distanceOther = 1.5
+            case "E":
+            deviceMotionStatusOther = "Dynamic"
+            distanceOther = 2.0
+            case "F":
+            deviceMotionStatusOther = "Dynamic"
+            distanceOther = 2.5
+            
+            default:
+            deviceMotionStatusOther = "Unknown"
+            distanceOther = -1.0
+        }
+        return distanceOther
+    }
+    
+    /*
+     Input: SDD, ODD,
+     Output: SDD or ODD
+     Function Get Optimal Distance
+     begin
+        if ODD is greater than zero
+        begin
+            if SDD is lower than ODD
+                 return SDD
+            else SDD is greater than ODD
+                 return ODD
+        end
+        else
+            return SDD
+     end
+     */
+    func get_Optimal_Distance(SDD: Double, ODD: Double)->(Double)
+    {
+        if ODD>0
+        {
+            if SDD < ODD
+            {
+                return SDD
+            }
+            else
+            {
+                return ODD
+            }
+        }
+        else
+        {
+            return SDD
+        }
+        
     }
 }
