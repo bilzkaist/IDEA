@@ -77,6 +77,9 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var localBeaconMinor: CLBeaconMinorValue = 0001
     var identifierBeacon = "Bilz"
     
+    var beaconRegionGlobal = CLBeaconRegion(beaconIdentityConstraint: CLBeaconIdentityConstraint(uuid: UUID(uuidString: "DA57A814-1DEA-DEED-AED1-418A75AD1000")!) , identifier: "DA57A814-1DEA-DEED-AED1-418A75AD1000")
+    
+   
     //let uuid = UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5")!
     let uuidArray = [
                      UUID(uuidString: "5A4BCFCE-174E-4BAC-A814-092E77F6B7E5"),
@@ -480,7 +483,7 @@ extension ViewController: UITableViewDataSource {
       
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
         customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m and ODMS: \(motionOtherDevice)", with: "RSSI: \(optimal_RSSI)", with: "uRSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
-        handshake?.text = "Handshake Count: \(beacons.count)"
+        handshake?.text = "Handshaking : \(beacons.count)"
         IDEA_ID = ""
         
         if (Int(beacon.minor) == (localBeaconMinor))
@@ -553,8 +556,9 @@ extension ViewController: UITableViewDataSource {
         {
             let constraint = CLBeaconIdentityConstraint(uuid: uui!)
             self.beaconConstraints[constraint] = []
-            let beaconRegion = CLBeaconRegion(beaconIdentityConstraint: constraint , identifier: uui!.uuidString)
-            locationManager.startMonitoring(for: beaconRegion)
+           // let beaconRegion
+            beaconRegionGlobal = CLBeaconRegion(beaconIdentityConstraint: constraint , identifier: uui!.uuidString)
+            locationManager.startMonitoring(for: beaconRegionGlobal)
             //print("Major : ",beaconRegion.major ?? 9999)
             //self.tableView.reloadData()
         }
@@ -1363,5 +1367,26 @@ extension ViewController
             return SDD
         }
         
+    }
+}
+
+
+extension ViewController
+{
+    func startAdvestisment()
+    {
+        startLocalBeacon()
+    }
+    func stopAdvertisement()
+    {
+        stopLocalBeacon()
+    }
+    func startScanner()
+    {
+        locationManager.startMonitoring(for: beaconRegionGlobal)
+    }
+    func stopScanner()
+    {
+        locationManager.stopMonitoring(for: beaconRegionGlobal)
     }
 }
