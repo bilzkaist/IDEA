@@ -52,15 +52,40 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     
     //  -----  Timer  -----  //
     var bilzTimer: Timer?
-    let callTimeInterval = 1.1
+    let callTimeInterval = 1.285  // Advertise Interval
+    var callTimeCounter = 0.0
     let rssiTimeInterval = 4
     var rssiTimeIntervalCount  = 10
-    //          End          //
+    let scanWindow  = 0.5120
+    let scanInterval = 5.12
+    let advertiseOnTime = 30.0
+    var scanONCount = 5.12
+    
+    // ---- BLE Scan Time Mode ---- //
+    let scanModeLowPowerWindowSec = 0.512
+    let scanModeLowPowerIntervalSec = 5.120
+    let scanModeBalancedWindowSec = 1.024
+    let scanModeBalanceIntervalSec = 4.096
+    let scanModeLowLatencyWindowSec = 4.096
+    let scanModeLowLatencyIntervalSec = 4.096
+    // ----- End ----_ //
     
     //  -----  Timer  -----  //
     var nowTime = Date()
     
     //          End          //
+    
+    
+       
+      // let advertiseONInterval = 30
+       var advertiseONCounter = 30.0  // Seconds
+       //          End          //
+       
+       // -------  Flags ------- //
+       var advertiseFlag = true
+       var scanFlag = false
+       
+       // -------   END --------- //
     
     
     // --- BLE -------//
@@ -667,6 +692,12 @@ extension ViewController
 {
     @objc func runEveryTime()
        {
+        
+        
+        
+        
+        
+        /*
            startLocalBeacon()
            nowTime = Date()
            //print("One Second Called at ")
@@ -682,6 +713,7 @@ extension ViewController
            {
                // Do Something here
            }
+        */
        }
 }
 
