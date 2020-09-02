@@ -52,7 +52,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     
     //  -----  Timer  -----  //
     var bilzTimer: Timer?
-    let callTimeInterval = 1.285  // Advertise Interval
+    let callTimeInterval = 0.9  // Advertise Interval
     var callTimeCounter = 0.0
     let rssiTimeInterval = 4
     var rssiTimeIntervalCount  = 10
@@ -693,9 +693,22 @@ extension ViewController
     @objc func runEveryTime()
        {
         
+        isDeviceMove()
+        startAdvestisment()
         
         
+        /*
+        if advertiseFlag == true
+        {
+            startAdvestisment()
+            advertiseONCounter = ad
+        }
+        else
+        {
+            
+        }
         
+        */
         
         /*
            startLocalBeacon()
