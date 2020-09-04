@@ -1,0 +1,6 @@
+framework module Pods_IDEA_IDEAUITests {
+  umbrella header "Pods-IDEA-IDEAUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
