@@ -270,9 +270,6 @@
                                     <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" translatesAutoresizingMaskIntoConstraints="NO" id="zOJ-14-MQJ">
                                         <rect key="frame" x="349" y="20" width="49" height="30"/>
                                         <state key="normal" title="MAP"/>
-                                        <connections>
-                                            <segue destination="R7S-bn-9sz" kind="presentation" id="h3Z-wt-OeU"/>
-                                        </connections>
                                     </button>
                                     <imageView clipsSubviews="YES" userInteractionEnabled="NO" contentMode="scaleAspectFit" horizontalHuggingPriority="251" verticalHuggingPriority="251" image="ISI Logo" translatesAutoresizingMaskIntoConstraints="NO" id="f94-kn-9xJ">
                                         <rect key="frame" x="85" y="20" width="244" height="53.5"/>
@@ -352,11 +349,11 @@
             <objects>
                 <viewController id="R7S-bn-9sz" customClass="MapViewController" customModule="IDEA" customModuleProvider="target" sceneMemberID="viewController">
                     <view key="view" contentMode="scaleToFill" id="ONx-PO-Ijw">
-                        <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                        <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                         <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                         <subviews>
                             <mapView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" mapType="standard" translatesAutoresizingMaskIntoConstraints="NO" id="7Js-Nd-idS">
-                                <rect key="frame" x="0.0" y="0.0" width="414" height="842"/>
+                                <rect key="frame" x="0.0" y="0.0" width="414" height="896"/>
                                 <connections>
                                     <outlet property="delegate" destination="R7S-bn-9sz" id="S13-fK-7pg"/>
                                 </connections>

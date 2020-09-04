@@ -11,6 +11,7 @@ import UIKit
 import CoreBluetooth
 import CoreLocation
 import CoreMotion
+import RealmSwift
 
 let kMaxRadius: CGFloat = 200
 let kMaxDuration: TimeInterval = 10
@@ -41,6 +42,9 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     @IBOutlet var SubHeadingText: UITextView!
     @IBOutlet var handshake: UILabel!
     
+
+    
+    
     let itemsarray = [ "Person A", "Person B", "Person C", "Person D", "Person E", "Person F", "Person G", "Person H", "Person I", "Person J" ]
     
     //  ----  Radar Color ----  //
@@ -52,13 +56,19 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     
     //  -----  Timer  -----  //
     var bilzTimer: Timer?
-    let callTimeInterval = 0.9  // Advertise Interval
+    let callTimeInterval = 0.05  // Recommended call time (0.05 to 0.1 seconds)
+    
     var callTimeCounter = 0.0
     let rssiTimeInterval = 4
     var rssiTimeIntervalCount  = 10
-    let scanWindow  = 0.5120
-    let scanInterval = 5.12
-    let advertiseOnTime = 30.0
+    var Window  = 0.5120
+    let advertisementInterval = 30
+    var runTimer = 30
+    var runCounter = 0
+    let advertiseOnTime = 30
+    let scanOnTime = 30
+    let advertiseIncrement = 1
+    
     var scanONCount = 5.12
     
     // ---- BLE Scan Time Mode ---- //
@@ -70,12 +80,15 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     let scanModeLowLatencyIntervalSec = 4.096
     // ----- End ----_ //
     
-    //  -----  Timer  -----  //
+    //  -----  Time  -----  //
     var nowTime = Date()
+    //          End         //
     
-    //          End          //
-    
-    
+    //  -----  Timer  -----  //
+    var startTime = NSTimeIntervalSince1970
+    var runTime = NSTimeIntervalSince1970
+    var runTimeStr = ""
+    //          End         //
        
       // let advertiseONInterval = 30
        var advertiseONCounter = 30.0  // Seconds
@@ -276,11 +289,19 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
       
     //                  END                    //
     
+    // -----  Realm Database -----//
+    let realm = try! Realm()
 
+    // --------  End -------------//
     let pulsator = Pulsator()
+    
     
     override func viewDidLoad() {
         super.viewDidLoad()
+        
+        // Realm
+        //deleteDistanceRec()
+        deleteDistanceRec()
         
         // Pulsator
         sourceView.layer.superlayer?.insertSublayer(pulsator, below: sourceView.layer)
@@ -308,6 +329,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         startScanning()
         
         // Timer Start
+        startTime = Date().timeIntervalSinceReferenceDate
         bilzTimer = Timer.scheduledTimer(timeInterval: callTimeInterval, target: self, selector: #selector(runEveryTime), userInfo: nil, repeats: true)
         
         
@@ -331,9 +353,9 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
             rSlider.value = Float(greencolor[0])
             gSlider.value = Float(greencolor[1])
             bSlider.value = Float(greencolor[2])
-            print(rSlider.value)
-            print(gSlider.value)
-            print(bSlider.value)
+          //  print(rSlider.value)
+          //  print(gSlider.value)
+          //  print(bSlider.value)
             colorChanged(sender: nil)
         }
         
@@ -422,7 +444,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
 
 extension ViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        print("You Tapped Me! ")
+        //print("You Tapped Me! ")
     }
 }
 
@@ -440,7 +462,11 @@ extension ViewController: UITableViewDataSource {
             gSlider.value = Float(greencolor[1])
             bSlider.value = Float(greencolor[2])
             colorChanged(sender: nil)
-            handshake?.text = "Handshake Count: nil"
+            if handshake?.text == nil
+            {
+                handshake?.text = "Handshake Count: nil"
+            }
+            scanFlag = false
         }
         else
         {
@@ -448,6 +474,7 @@ extension ViewController: UITableViewDataSource {
             gSlider.value = Float(bluecolor[1])
             bSlider.value = Float(bluecolor[2])
             colorChanged(sender: nil)
+            scanFlag = true
         }
         return beacons.count
     }
@@ -467,6 +494,7 @@ extension ViewController: UITableViewDataSource {
     
         let major = String(format:"%02X", beacon.major)
         let minor = String(format:"%02X", beacon.minor)
+        print("Major: ",major, " and Minor: ",minor)
         
         let uuidParameterStr = beacon.uuid.uuidString;
        
@@ -490,7 +518,7 @@ extension ViewController: UITableViewDataSource {
         let distanceiBeacon = beacon.accuracy
         let distanceTradition = getDistance_RSSI(txCalibratedPower: -59, rssi: beacon.rssi)
         let distance = get_Optimal_Distance(SDD: distance_RSSI, ODD: distanceOtherDevice)
-        
+        optimal_Distance = distance
         
         let distanceStr = String(format: "%.2f", distance)
         let distanceiBeaconStr = String(format: "%.2f", distanceiBeacon)
@@ -508,23 +536,35 @@ extension ViewController: UITableViewDataSource {
       
         let customCell = tableView.dequeueReusableCell(withIdentifier: MyTableViewCell.identifier, for: indexPath) as! MyTableViewCell
         customCell.configure(with: "UUID: \(beacon.uuid)", with: "CONTACT ID: \(IDEA_ID)", with: "d1: \(distanceiBeaconStr) m, d2: \(distanceTraditionStr) m and ODMS: \(motionOtherDevice)", with: "RSSI: \(optimal_RSSI)", with: "uRSSI: \(beacon.rssi)", with: "d =  \(distanceStr) m", with: "Device: \(deviceMotionStatus)", imageName: UIImage(named: "BLE.png")!)
-        handshake?.text = "Handshaking : \(beacons.count)"
-        IDEA_ID = ""
+        handshake?.text = "OnTime: \(runCounter) s Handshaking : \(beacons.count)"
+        
         
         if (Int(beacon.minor) == (localBeaconMinor))
         {
             localBeaconMinor = CLBeaconMinorValue(Int(beacon.minor) + 1 )
         }
         
+        
         // call function here
+       // deleteDistanceRec()
+        //saveDistanceRec(distance: distanceStr)
+        print("Table|ContactID: ",IDEA_ID)
+        saveContactRec(scanUUID: "\(beacon.uuid)", scanMajor: "\(beacon.major)", scanMinor: "\(beacon.minor)", contactID: "\(IDEA_ID)", distanceIDEA: "\(distanceStr)", distanceApple: "\(distanceiBeaconStr)", distanceTraditional: "\(distanceTraditionStr)", selfDeviceMotion: "\(deviceMotionStatus)", otherDeviceMotion: "\(motionOtherDevice)", unstableRSSI: "\(beacon.rssi)", optimalRSSI: "\(optimal_RSSI)")
+        
+        // Save to the Database Data Here
+        
        
+            
+            
+        // End of the Save Database
         
         localIDEAUUID = updateUUID(distance: distance)
-        print("IDEAUUID : ",localIDEAUUID)
+        
+        //print("IDEAUUID : ",localIDEAUUID)
         
         
      
-        if  distance < 1.0
+        if  distance < 1.1
         {
             if distanceAlertFlag != false
             {
@@ -537,7 +577,7 @@ extension ViewController: UITableViewDataSource {
             bSlider.value = Float(redcolor[2])
             colorChanged(sender: nil)
         }
-        else if distance < 2.0 && distance > 1.0
+        else if distance < 2.1 && distance > 1.1
         {
             if distanceAlertFlag == true
             {
@@ -563,7 +603,7 @@ extension ViewController: UITableViewDataSource {
             colorChanged(sender: nil)
         }
         
-        
+        IDEA_ID = ""
         return customCell
 
     }
@@ -652,7 +692,7 @@ extension ViewController: CLLocationManagerDelegate {
             stopLocalBeacon()
         }
         
-        print("\nBroadcast IDEA UUID :",localIDEAUUID)
+       // print("\nBroadcast IDEA UUID :",localIDEAUUID)
         if (localIDEAUUID == nil)
         {
             localIDEAUUID = localBeaconUUID
@@ -687,51 +727,7 @@ extension ViewController: CLLocationManagerDelegate {
 // End of BLE Functions Advertising Code   //
 
 
-// WD Timer //
-extension ViewController
-{
-    @objc func runEveryTime()
-       {
-        
-        isDeviceMove()
-        startAdvestisment()
-        
-        
-        /*
-        if advertiseFlag == true
-        {
-            startAdvestisment()
-            advertiseONCounter = ad
-        }
-        else
-        {
-            
-        }
-        
-        */
-        
-        /*
-           startLocalBeacon()
-           nowTime = Date()
-           //print("One Second Called at ")
-           //print("IDEA ID: ",generate_IDEA_ID(major: "2019", minor: "5610", other: ""))
-          // print(nowTime)
-         //  print("\nBroadcast IDEA UUID :",localIDEAUUID)
-        
-           if isDeviceMove()==false
-           {
-               // Do Something here
-           }
-           else
-           {
-               // Do Something here
-           }
-        */
-       }
-}
 
-
-//
 
 
 
@@ -774,9 +770,9 @@ extension ViewController
         
         let local_Hour = String(Calendar.current.component(.hour, from: Date()))
         
-        local_IDEA_ID.append(local_Major)
+        local_IDEA_ID.append("\(localBeaconMajor)")
         local_IDEA_ID.append("-")
-        local_IDEA_ID.append(local_Minor)
+        local_IDEA_ID.append("AEDI")//local_Minor)
         local_IDEA_ID.append("-")
         local_IDEA_ID.append(local_Year)
         //local_IDEA_ID.append("-")
@@ -1183,16 +1179,16 @@ end
         if let zValue = motionManager.magnetometerData?.magneticField.z {
             mag_raw_z = zValue
         }
-        print(mag_raw_x)
+        //print(mag_raw_x)
         mag_display_x = Int(mag_raw_x)
         mag_display_y = Int(mag_raw_y)
         mag_display_z = Int(mag_raw_z)
-        print(" Mag X : ")
-        print(mag_display_x)
-        print(" Mag Y : ")
-        print(mag_display_y)
-        print(" Mag Z : ")
-        print(mag_display_z)
+       // print(" Mag X : ")
+       // print(mag_display_x)
+       // print(" Mag Y : ")
+       // print(mag_display_y)
+       // print(" Mag Z : ")
+       // print(mag_display_z)
         mag_use_x = (mag_raw_x * 100)
         mag_use_y = (mag_raw_y * 100)
         mag_use_z = (mag_raw_z * 100)
@@ -1284,7 +1280,7 @@ extension ViewController
     func getDistanceCentiMeter (distance:Double)-> String
     {
         var dcm = 0
-        print("Inside getDistanceCentiMeter d : ",distance)
+        //print("Inside getDistanceCentiMeter d : ",distance)
         if (distance<1.0)
         {
             dcm = (Int (distance * 100.0))
@@ -1293,19 +1289,19 @@ extension ViewController
         else
         {
             let dr =  (distance*100.0) - (Double(Int(distance)) * 100)
-            print("dr : ",dr)
+           // print("dr : ",dr)
             dcm = Int(dr)
             
         }
         if (dcm > 9)
         {
-            print("dcm : ",dcm)
+            //print("dcm : ",dcm)
             return String (dcm)
         }
         else
         {
             let dcma = "0"+String(dcm)
-            print("dcma : ",dcma)
+          //  print("dcma : ",dcma)
             return dcma
         }
     }
@@ -1318,7 +1314,7 @@ extension ViewController
     {
         let uuidParameterLast = uuidParameter.last;
         var distanceOther = 0.0
-        print("UUID Parameter Extracted : ", uuidParameterLast)
+        //print("UUID Parameter Extracted : ", uuidParameterLast)
         switch uuidParameterLast
         {
             case "0":
@@ -1418,7 +1414,7 @@ extension ViewController
 
 extension ViewController
 {
-    func startAdvestisment()
+    func startAdvertisment()
     {
         startLocalBeacon()
     }
@@ -1435,3 +1431,277 @@ extension ViewController
         locationManager.stopMonitoring(for: beaconRegionGlobal)
     }
 }
+
+
+extension ViewController
+{
+    func saveDistanceRec(distance: String)
+    {
+        
+        let contactList = List<distanceRecord>()
+        let contact = distanceRecord()
+        let index = "\(runCounter)"
+        contact.Index = index
+        contact.Distance = distance
+        let date = Date()
+        let calendar = Calendar.current
+        let time = "\(String (calendar.component(.hour, from: date))):\(String(calendar.component(.minute, from: date))):\(String(calendar.component(.second, from: date)))"
+        contact.RunTime = time
+        contactList.append(contact)
+        
+        realm.beginWrite()
+        realm.add(contactList)
+        
+        try! realm.commitWrite()
+        
+        
+    }
+    /*
+     @objc dynamic var scanUUID: String = ""
+     @objc dynamic var scanMajor: String = ""
+     @objc dynamic var scanMinor: String = ""
+     @objc dynamic var advertiseUUID: String = ""
+     @objc dynamic var advertiseMajor: String = ""
+     @objc dynamic var advertiseMinor: String = ""
+     @objc dynamic var contactID: String = ""
+     @objc dynamic var distanceIDEA: String = ""
+     @objc dynamic var distanceApple: String = ""
+     @objc dynamic var distanceTraditional: String = ""
+     @objc dynamic var selfDeviceMotion: String = ""
+     @objc dynamic var otherDeviceMotion: String = ""
+     @objc dynamic var unstableRSSI: String = ""
+     @objc dynamic var optimalRSSI: String = ""
+     @objc dynamic var time: String = ""
+     
+     */
+    func saveContactRec(scanUUID: String, scanMajor: String, scanMinor: String, contactID: String, distanceIDEA: String, distanceApple: String, distanceTraditional: String, selfDeviceMotion: String, otherDeviceMotion: String, unstableRSSI: String, optimalRSSI: String)
+    {
+        let contactList = List<contactRecord>()
+        let contact = contactRecord()
+        runCounter = runCounter + 1
+        let Index = "\(runCounter)"
+        contact.Index = Index
+        let date = Date()
+        let calendar = Calendar.current
+        let time = "\(String (calendar.component(.hour, from: date))):\(String(calendar.component(.minute, from: date))):\(String(calendar.component(.second, from: date)))"
+        
+        contact.runTime = "\(runTimeStr)"
+        contact.localTime = time
+        contact.scanUUID = scanUUID
+        contact.scanMajor = scanMajor
+        contact.scanMinor = scanMinor
+        contact.advertiseUUID = localIDEAUUID
+        contact.advertiseMajor = "\(localBeaconMajor)"
+        contact.advertiseMinor = "\(localBeaconMinor)"
+        print("ContactID: ",contactID)
+        contact.contactID = contactID
+        contact.distanceIDEA = distanceIDEA
+        contact.distanceApple = distanceApple
+        contact.distanceTraditional = distanceTraditional
+        contact.selfDeviceMotion = selfDeviceMotion
+        contact.otherDeviceMotion = otherDeviceMotion
+        contact.unstableRSSI = unstableRSSI
+        contact.optimalRSSI = optimalRSSI
+        
+        
+        
+        
+        
+        
+        contactList.append(contact)
+        
+        realm.beginWrite()
+        realm.add(contactList)
+        
+        try! realm.commitWrite()
+    }
+    
+    func renderRec()
+    {
+        let contacts = realm.objects(distanceRecord.self)
+        for contact in contacts
+        {
+            //let index = contact.Index
+            let distance = contact.Distance
+            let time = contact.RunTime
+            let contactRecord = "Distance: \(distance) m at \(time)"
+            print("\(contactRecord)")
+            /*
+            let label = UILabel (frame: view.bounds)
+            label.text = contactRecord
+            label.textAlignment = .justified
+            label.numberOfLines = 30
+            view.addSubview(label)
+            label.font = UIFont(name: "Helvetica", size: 12)
+            */
+        }
+    }
+    
+    func deleteDistanceRec()
+    {
+        realm.beginWrite()
+        realm.delete(realm.objects(distanceRecord.self))
+        try! realm.commitWrite()
+    }
+    
+    func deleteContactRec()
+    {
+        realm.beginWrite()
+        realm.delete(realm.objects(contactRecord.self))
+        try! realm.commitWrite()
+    }
+}
+
+class distanceRecord: Object
+{
+    @objc dynamic var Index: String = ""
+    @objc dynamic var Distance: String = ""
+    @objc dynamic var RunTime: String = ""
+}
+
+class contactRecord: Object
+{
+    @objc dynamic var Index: String = ""
+    @objc dynamic var runTime: String = ""
+    @objc dynamic var distanceIDEA: String = ""
+    @objc dynamic var distanceApple: String = ""
+    @objc dynamic var distanceTraditional: String = ""
+    @objc dynamic var unstableRSSI: String = ""
+    @objc dynamic var optimalRSSI: String = ""
+    @objc dynamic var selfDeviceMotion: String = ""
+    @objc dynamic var otherDeviceMotion: String = ""
+    @objc dynamic var localTime: String = ""
+    @objc dynamic var contactID: String = ""
+    @objc dynamic var scanUUID: String = ""
+    @objc dynamic var scanMajor: String = ""
+    @objc dynamic var scanMinor: String = ""
+    @objc dynamic var advertiseUUID: String = ""
+    @objc dynamic var advertiseMajor: String = ""
+    @objc dynamic var advertiseMinor: String = ""
+   
+    
+  
+
+}
+
+
+
+
+// SHOULD ALWAYS BE END Important Timer //
+extension ViewController
+{
+    @objc func runEveryTime()
+    {
+        runTime = Date().timeIntervalSinceReferenceDate - startTime
+        runTimeStr = String(format: "%.3f", runTime)
+        print("Run Time : \(runTimeStr)")
+        isDeviceMove()
+        startAdvertisment()
+        /*
+        if advertiseFlag == true
+        {
+            
+            if runCounter > advertiseOnTime
+            {
+                advertiseFlag = false
+                stopAdvertisement()
+                runCounter = 0
+            }
+            else
+            {
+                startAdvertisment()
+                runCounter = runCounter + advertiseIncrement
+                //print("runCounter: \(runCounter)")
+            }
+        }
+        else
+        {
+            if deviceMotionStatus == "Dynamic"
+            {
+                startAdvertisment()
+                advertiseFlag = true
+            }
+            else
+            {
+                if scanFlag == true
+                {
+                    if runCounter > scanOnTime
+                    {
+                        advertiseFlag = true
+                        startAdvertisment()
+                        runCounter = 0
+                    }
+                    else
+                    {
+                        //startAdvertisment()
+                        runCounter = runCounter + advertiseIncrement
+                        print("runCounter: \(runCounter)")
+                    }
+                }
+                else
+                {
+                    //
+                }
+            }
+            
+        }
+        */
+   
+        
+      
+        
+    }
+}
+        
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        /*
+        if advertiseFlag == true
+        {
+            startAdvestisment()
+            advertiseONCounter = ad
+        }
+        else
+        {
+            
+        }
+        
+        */
+        
+        /*
+           startLocalBeacon()
+           nowTime = Date()
+           //print("One Second Called at ")
+           //print("IDEA ID: ",generate_IDEA_ID(major: "2019", minor: "5610", other: ""))
+          // print(nowTime)
+         //  print("\nBroadcast IDEA UUID :",localIDEAUUID)
+        
+           if isDeviceMove()==false
+           {
+               // Do Something here
+           }
+           else
+           {
+               // Do Something here
+           }
+        */
+
+
+
+//
