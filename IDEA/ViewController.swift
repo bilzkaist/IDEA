@@ -88,6 +88,11 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var startTime = NSTimeIntervalSince1970
     var runTime = NSTimeIntervalSince1970
     var runTimeStr = ""
+    var runTimeInt = 0
+    let runTimeCounterIncrement = 0.05
+    var runTimeCounter = 0.0
+
+    
     //          End         //
        
       // let advertiseONInterval = 30
@@ -97,6 +102,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
        // -------  Flags ------- //
        var advertiseFlag = true
        var scanFlag = false
+       var scanTimeFlag = true
        
        // -------   END --------- //
     
@@ -1493,7 +1499,7 @@ extension ViewController
         contact.advertiseUUID = localIDEAUUID
         contact.advertiseMajor = "\(localBeaconMajor)"
         contact.advertiseMinor = "\(localBeaconMinor)"
-        print("ContactID: ",contactID)
+        //print("ContactID: ",contactID)
         contact.contactID = contactID
         contact.distanceIDEA = distanceIDEA
         contact.distanceApple = distanceApple
@@ -1525,7 +1531,7 @@ extension ViewController
             let distance = contact.Distance
             let time = contact.RunTime
             let contactRecord = "Distance: \(distance) m at \(time)"
-            print("\(contactRecord)")
+            //print("\(contactRecord)")
             /*
             let label = UILabel (frame: view.bounds)
             label.text = contactRecord
@@ -1594,9 +1600,42 @@ extension ViewController
     {
         runTime = Date().timeIntervalSinceReferenceDate - startTime
         runTimeStr = String(format: "%.3f", runTime)
-        print("Run Time : \(runTimeStr)")
+       // print("Run Time : \(runTimeStr)")
+        //runTimeInt = Int(String(format: "%.3f", runTime))!
         isDeviceMove()
         startAdvertisment()
+        
+        // Scanning Low Power Mode
+        runTimeCounter = runTimeCounter + runTimeCounterIncrement
+        if runTimeCounter < scanModeLowPowerWindowSec
+        {
+            if scanTimeFlag == false
+            {
+                startScanner()
+                scanTimeFlag = true
+                print("....START......................RunTimeCounter: \(runTimeCounter)")
+            }
+        }
+        else
+        {
+            if runTimeCounter < scanModeLowPowerIntervalSec
+            {
+                if scanTimeFlag == true
+                {
+                    stopScanner()
+                    scanTimeFlag = false
+                    print(".....STOP.....................RunTimeCounter: \(runTimeCounter)")
+                }
+            }
+            else
+            {
+                
+                print("....RESTART......................RunTimeCounter: \(runTimeCounter)")
+                runTimeCounter = 0.0
+            }
+        }
+        
+        
         /*
         if advertiseFlag == true
         {
