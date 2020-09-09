@@ -64,12 +64,23 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var Window  = 0.5120
     let advertisementInterval = 30
     var runTimer = 30
-    var runCounter = 0
-    let advertiseOnTime = 30
+    var runCounter = 0.0
+    var indexContactRecord = 0
+    let advertiseOnTime = 45
+    let advertiseOFFTime = 0
     let scanOnTime = 30
     let advertiseIncrement = 1
     
     var scanONCount = 5.12
+    
+    // ---- BLE Adertisment Time Mode ---- //
+    let advertisementWindowSec = 600.0 // 30 Seconds
+    let advertisementIntervalSec = 1800.0 // for 0.900 ms (0.05 Increment)
+    
+    let runAdvertisementTimeCounterIncrement = 0.05
+    var runAdvertisementTimeCounter = 0.0
+    // ----- End ----_ //
+    
     
     // ---- BLE Scan Time Mode ---- //
     let scanModeLowPowerWindowSec = 0.512
@@ -78,6 +89,10 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     let scanModeBalanceIntervalSec = 4.096
     let scanModeLowLatencyWindowSec = 4.096
     let scanModeLowLatencyIntervalSec = 4.096
+    
+    let runScanTimeCounterIncrement = 0.05
+    var runScanTimeCounter = 0.0
+
     // ----- End ----_ //
     
     //  -----  Time  -----  //
@@ -89,9 +104,8 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
     var runTime = NSTimeIntervalSince1970
     var runTimeStr = ""
     var runTimeInt = 0
-    let runTimeCounterIncrement = 0.05
-    var runTimeCounter = 0.0
-
+    
+   
     
     //          End         //
        
@@ -101,6 +115,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
        
        // -------  Flags ------- //
        var advertiseFlag = true
+       var advertiseTimeFlag = false
        var scanFlag = false
        var scanTimeFlag = true
        
@@ -307,7 +322,7 @@ class ViewController: UIViewController, CBPeripheralManagerDelegate{
         
         // Realm
         //deleteDistanceRec()
-        deleteDistanceRec()
+        deleteContactRec()
         
         // Pulsator
         sourceView.layer.superlayer?.insertSublayer(pulsator, below: sourceView.layer)
@@ -500,7 +515,7 @@ extension ViewController: UITableViewDataSource {
     
         let major = String(format:"%02X", beacon.major)
         let minor = String(format:"%02X", beacon.minor)
-        print("Major: ",major, " and Minor: ",minor)
+        //print("Major: ",major, " and Minor: ",minor)
         
         let uuidParameterStr = beacon.uuid.uuidString;
        
@@ -554,7 +569,7 @@ extension ViewController: UITableViewDataSource {
         // call function here
        // deleteDistanceRec()
         //saveDistanceRec(distance: distanceStr)
-        print("Table|ContactID: ",IDEA_ID)
+       // print("Table|ContactID: ",IDEA_ID)
         saveContactRec(scanUUID: "\(beacon.uuid)", scanMajor: "\(beacon.major)", scanMinor: "\(beacon.minor)", contactID: "\(IDEA_ID)", distanceIDEA: "\(distanceStr)", distanceApple: "\(distanceiBeaconStr)", distanceTraditional: "\(distanceTraditionStr)", selfDeviceMotion: "\(deviceMotionStatus)", otherDeviceMotion: "\(motionOtherDevice)", unstableRSSI: "\(beacon.rssi)", optimalRSSI: "\(optimal_RSSI)")
         
         // Save to the Database Data Here
@@ -707,6 +722,7 @@ extension ViewController: CLLocationManagerDelegate {
         localBeacon = CLBeaconRegion(proximityUUID: uuid, major: localBeaconMajor, minor: localBeaconMinor, identifier: identifierBeacon)
         beaconPeripheralData = localBeacon.peripheralData(withMeasuredPower: nil)
         peripheralManager = CBPeripheralManager(delegate: self, queue: nil, options: nil)
+        saveContactRec(scanUUID: "", scanMajor: "", scanMinor: "", contactID: "", distanceIDEA: "", distanceApple: "", distanceTraditional: "", selfDeviceMotion: "\(deviceMotionStatus)", otherDeviceMotion: "", unstableRSSI: "", optimalRSSI: "")
         
     }
     
@@ -1420,7 +1436,7 @@ extension ViewController
 
 extension ViewController
 {
-    func startAdvertisment()
+    func startAdvertisement()
     {
         startLocalBeacon()
     }
@@ -1484,13 +1500,28 @@ extension ViewController
     {
         let contactList = List<contactRecord>()
         let contact = contactRecord()
-        runCounter = runCounter + 1
-        let Index = "\(runCounter)"
+        indexContactRecord = indexContactRecord + 1
+        let Index = "\(indexContactRecord)"
         contact.Index = Index
         let date = Date()
         let calendar = Calendar.current
         let time = "\(String (calendar.component(.hour, from: date))):\(String(calendar.component(.minute, from: date))):\(String(calendar.component(.second, from: date)))"
-        
+        if advertiseTimeFlag == true
+        {
+            contact.Advertisement = "1"
+        }
+        else
+        {
+            contact.Advertisement = "0"
+        }
+        if scanTimeFlag == true
+        {
+            contact.Scanner = "1"
+        }
+        else
+        {
+            contact.Scanner = "0"
+        }
         contact.runTime = "\(runTimeStr)"
         contact.localTime = time
         contact.scanUUID = scanUUID
@@ -1569,6 +1600,8 @@ class contactRecord: Object
 {
     @objc dynamic var Index: String = ""
     @objc dynamic var runTime: String = ""
+    @objc dynamic var Advertisement: String = ""
+    @objc dynamic var Scanner: String = ""
     @objc dynamic var distanceIDEA: String = ""
     @objc dynamic var distanceApple: String = ""
     @objc dynamic var distanceTraditional: String = ""
@@ -1593,72 +1626,147 @@ class contactRecord: Object
 
 
 
-// SHOULD ALWAYS BE END Important Timer //
+// SHOULD ALWAYS BE AT THE END Important Timer //
 extension ViewController
 {
     @objc func runEveryTime()
     {
         runTime = Date().timeIntervalSinceReferenceDate - startTime
         runTimeStr = String(format: "%.3f", runTime)
-       // print("Run Time : \(runTimeStr)")
+        runTimeInt = Int(runTime)
+        
+     //   print("Run Time : \(runTimeInt)")
         //runTimeInt = Int(String(format: "%.3f", runTime))!
         isDeviceMove()
-        startAdvertisment()
+        // startAdvertisement()
+        
+        // Advertisment Apple Recommended Mode
+        // runAdvertisementTimeCounter = runAdvertisementTimeCounter + runAdvertisementTimeCounterIncrement
+        // if runAdvertisementTimeCounter <
+        
         
         // Scanning Low Power Mode
-        runTimeCounter = runTimeCounter + runTimeCounterIncrement
-        if runTimeCounter < scanModeLowPowerWindowSec
+        runScanTimeCounter = runScanTimeCounter + runScanTimeCounterIncrement
+        if runScanTimeCounter < scanModeLowPowerWindowSec
         {
             if scanTimeFlag == false
             {
                 startScanner()
                 scanTimeFlag = true
-                print("....START......................RunTimeCounter: \(runTimeCounter)")
+              //  print("....START......................runScanTimeCounter: \(runScanTimeCounter)")
             }
         }
         else
         {
-            if runTimeCounter < scanModeLowPowerIntervalSec
+            if runScanTimeCounter < scanModeLowPowerIntervalSec
             {
                 if scanTimeFlag == true
                 {
                     stopScanner()
                     scanTimeFlag = false
-                    print(".....STOP.....................RunTimeCounter: \(runTimeCounter)")
+               //     print("....STOP.....................runScanTimeCounter: \(runScanTimeCounter)")
                 }
+                
             }
             else
             {
                 
-                print("....RESTART......................RunTimeCounter: \(runTimeCounter)")
-                runTimeCounter = 0.0
+               // print("....RESTART......................runScanTimeCounter: \(runScanTimeCounter)")
+                runScanTimeCounter = 0.0
             }
         }
         
+        // Advertisement Apple Recommendation
+        runAdvertisementTimeCounter = runAdvertisementTimeCounter + runAdvertisementTimeCounterIncrement
+       // print("-----runAdvertisementTimeCounter: \(Int(runAdvertisementTimeCounter*100.0))")
+        if runAdvertisementTimeCounter < advertisementIntervalSec
+        {
+            advertiseTimeFlag = true
+            startAdvertisement()
+
+        }
+        else
+        {
+            if runAdvertisementTimeCounter < advertisementWindowSec
+            {
+                if advertiseTimeFlag == true
+                {
+                    advertiseTimeFlag = false
+                    stopAdvertisement()
+                //    print("....STOP.....................runAdvertisementTimeCounter: \(runAdvertisementTimeCounter)")
+                }
+                
+            }
+        }
+    }
+}
+        
+        // print("....START......................runAdvertisementTimeCounter: \(runAdvertisementTimeCounter)")
+         /*if advertiseTimeFlag == false
+         {
+             stopAdvertisement()
+             advertiseTimeFlag = true
+             print("....START......................runAdvertisementTimeCounter: \(runAdvertisementTimeCounter)")
+         }
+         else
+         {
+             
+         }*/
+        
+        /*
+        if advertiseTimeFlag == true
+        {
+            stopAdvertisement()
+            advertiseTimeFlag = false
+            print("....STOP.....................runAdvertisementTimeCounter: \(runAdvertisementTimeCounter)")
+        }
+        else
+        {
+            print("....RESTART......................runAdvertisementTimeCounter: \(runAdvertisementTimeCounter)")
+            runAdvertisementTimeCounter = 0.0
+        }
+        */
         
         /*
         if advertiseFlag == true
         {
             
-            if runCounter > advertiseOnTime
+            if runCounter > advertisementIntervalSec//advertiseOnTime
             {
                 advertiseFlag = false
                 stopAdvertisement()
-                runCounter = 0
+                //runCounter = 0
             }
             else
             {
-                startAdvertisment()
+                startAdvertisement()
+                //if runTimeInt == Int(runTimeInt/)
                 runCounter = runCounter + advertiseIncrement
                 //print("runCounter: \(runCounter)")
             }
         }
         else
         {
+            if runCounter <= advertiseOFFTime
+            {
+                advertiseFlag = true
+                startAdvertisement()
+                //runCounter = 0
+            }
+            else
+            {
+                //startAdvertisement()
+                runCounter = runCounter - advertiseIncrement
+                //print("runCounter: \(runCounter)")
+            }
+        }
+ */
+            /*
             if deviceMotionStatus == "Dynamic"
             {
-                startAdvertisment()
                 advertiseFlag = true
+                //startAdvertisement()
+                runCounter = 0
             }
             else
             {
@@ -1667,14 +1775,15 @@ extension ViewController
                     if runCounter > scanOnTime
                     {
                         advertiseFlag = true
-                        startAdvertisment()
+                        //startAdvertisement()
                         runCounter = 0
                     }
                     else
                     {
-                        //startAdvertisment()
-                        runCounter = runCounter + advertiseIncrement
-                        print("runCounter: \(runCounter)")
+                        //startAdvertisement()
+                     
+                        runCounter = runCounter + 1  //advertiseIncrement
+                        print("Waiting ... runCounter: \(runCounter)")
                     }
                 }
                 else
@@ -1682,17 +1791,12 @@ extension ViewController
                     //
                 }
             }
+         */
             
-        }
-        */
+       // }
+        
    
         
-      
-        
-    }
-}
-        
-
 
 
 
