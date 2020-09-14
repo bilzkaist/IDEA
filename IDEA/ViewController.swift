@@ -1676,6 +1676,10 @@ extension ViewController
             }
         }
         
+        
+        
+        
+        
         // Advertisement Apple Recommendation
         runAdvertisementTimeCounter = runAdvertisementTimeCounter + runAdvertisementTimeCounterIncrement
        // print("-----runAdvertisementTimeCounter: \(Int(runAdvertisementTimeCounter*100.0))")
@@ -1760,6 +1764,10 @@ extension ViewController
                 //print("runCounter: \(runCounter)")
             }
         }
+ 
+ 
+        //Smart 
+ 
  */
             /*
             if deviceMotionStatus == "Dynamic"
